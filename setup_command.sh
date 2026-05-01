@@ -104,7 +104,7 @@ docker cp /workspaces/dbt_learning_project/script/dataset sqlserver:/data/
 docker exec -it -u root sqlserver bash
 
 #chage file permition 
-chmod -R 777 /workspaces/dbt_learning_project/script/dataset
+chmod -R 777 /workspaces/dbt_learning_project/dataset
 
 ################################################################################
 ######################## DATABASE AND PYTHON SETUP #############################
