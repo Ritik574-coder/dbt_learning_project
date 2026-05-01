@@ -103,7 +103,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading table : bronze.customers | ' + CONVERT(NVARCHAR, GETDATE(), 120) ;
         BULK INSERT bronze.customers
-        FROM '/data/Dataset/raw_customers.csv'
+        FROM '/data/raw_customers.csv'
         WITH
         (
             FORMAT = 'CSV',
@@ -126,7 +126,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.employees | ' + CONVERT(NVARCHAR, GETDATE(), 120) ;
         BULK INSERT bronze.employees
-        FROM '/data/Dataset/raw_employees.csv'
+        FROM '/data/raw_employees.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
@@ -148,7 +148,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.inventory_snapshots | ' + CONVERT(NVARCHAR, GETDATE(), 120);
         BULK INSERT bronze.inventory_snapshots
-        FROM '/data/Dataset/raw_inventory_snapshots.csv'
+        FROM '/data/raw_inventory_snapshots.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
@@ -170,7 +170,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.products | ' + CAST(DATEDIFF(SECOND , @start_time, @end_time) AS NVARCHAR) + ' second' ;
         BULK INSERT bronze.products
-        FROM '/data/Dataset/raw_products.csv'
+        FROM '/data/raw_products.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
@@ -192,7 +192,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.returns | ' + CAST(DATEDIFF(SECOND , @start_time, @end_time) AS NVARCHAR) + ' second' ;
         BULK INSERT bronze.returns
-        FROM '/data/Dataset/raw_returns.csv'
+        FROM '/data/raw_returns.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
@@ -214,7 +214,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.reviews | ' + CAST(DATEDIFF(SECOND , @start_time, @end_time) AS NVARCHAR) + ' second' ;
         BULK INSERT bronze.reviews
-        FROM '/data/Dataset/raw_reviews.csv'
+        FROM '/data/raw_reviews.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
@@ -236,7 +236,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.sales_transactions | ' + CAST(DATEDIFF(SECOND , @start_time, @end_time) AS NVARCHAR) + ' second' ;
         BULK INSERT bronze.sales_transactions
-        FROM '/data/Dataset/raw_sales_transactions.csv'
+        FROM '/data/raw_sales_transactions.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
@@ -258,7 +258,7 @@ BEGIN
 
         PRINT '>> [INFO] Loading Table : bronze.stores | ' + CAST(DATEDIFF(SECOND , @start_time, @end_time) AS NVARCHAR) + ' second' ;
         BULK INSERT bronze.stores
-        FROM '/data/Dataset/raw_stores.csv'
+        FROM '/data/raw_stores.csv'
         WITH(
                 FORMAT = 'CSV',
                 FIRSTROW = 2,
