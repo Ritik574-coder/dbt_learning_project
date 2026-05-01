@@ -25,4 +25,3 @@ This repository contains my hands-on learning and implementation of **dbt (Data 
 
 ---
 
-## 🏗️ Project Structure
