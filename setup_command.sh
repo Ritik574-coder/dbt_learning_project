@@ -98,7 +98,7 @@ docker exec -it sqlserver /opt/mssql-tools/bin/sqlcmd
 -S localhost -U sa -P "Ritik@843313"
 
 # moving data 
-docker cp /workspaces/dbt_learning_project/script/dataset sqlserver:/data/
+docker cp /workspaces/dbt_learning_project/dataset sqlserver:/data/
 
 # access SQL serve cli
 docker exec -it -u root sqlserver bash
