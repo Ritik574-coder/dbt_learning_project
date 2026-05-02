@@ -1,0 +1,91 @@
+version: 2
+
+# =========================
+#  SOURCE DEFINITIONS
+# =========================
+sources:
+  - name: bronze
+    database: Dbt_DB
+    schema: bronze
+
+    tables:
+      - name: customers
+        description: "Raw customers data loaded from source system"
+
+        columns:
+          - name: customer_id
+            description: "Unique identifier for each customer"
+            tests: [not_null]
+
+          - name: title
+            description: "Customer title (Mr, Ms, Dr, etc.)"
+
+          - name: first_name
+            description: "Customer first name"
+
+          - name: last_name
+            description: "Customer last name"
+
+          - name: full_name
+            description: "Concatenated full name of the customer"
+
+          - name: gender
+            description: "Customer gender"
+
+          - name: date_of_birth
+            description: "Date of birth of the customer"
+
+          - name: age
+            description: "Age of the customer in years"
+
+          - name: email
+            description: "Customer email address"
+            tests: [not_null]
+
+          - name: phone
+            description: "Customer phone number"
+
+          - name: address
+            description: "Customer full address"
+
+          - name: city
+            description: "City where customer resides"
+
+          - name: state
+            description: "State name"
+
+          - name: state_abbr
+            description: "State abbreviation"
+
+          - name: state_full
+            description: "Full state name"
+
+          - name: zip_code
+            description: "Postal ZIP code"
+
+          - name: country
+            description: "Country name"
+
+          - name: region
+            description: "Geographical region"
+
+          - name: customer_segment
+            description: "Customer segmentation category"
+
+          - name: loyalty_points
+            description: "Accumulated loyalty reward points"
+
+          - name: is_active
+            description: "Indicates whether the customer is active"
+
+          - name: account_created_date
+            description: "Date when the customer account was created"
+
+          - name: preferred_channel
+            description: "Preferred communication channel"
+
+          - name: annual_income_usd
+            description: "Annual income of customer in USD"
+
+          - name: company
+            description: "Company name associated with the customer"
