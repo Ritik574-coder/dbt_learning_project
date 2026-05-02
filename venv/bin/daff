@@ -1,0 +1,6 @@
+#!/workspaces/dbt_learning_project/venv/bin/python3
+import sys
+from daff import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
