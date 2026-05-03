@@ -223,3 +223,171 @@ Runtime Error
 [0m11:24:49.000848 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x793cfb3022a0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x793cfa9f5610>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x793cfa96d5b0>]}
 [0m11:24:49.001380 [debug] [MainThread]: Flushing usage events
 [0m11:24:49.839564 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m06:59:19.855522 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x71c8f628cd40>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x71c8f5005940>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x71c8f4a94bc0>]}
+
+
+============================== 06:59:19.862110 | 491bc10b-e2df-47ce-99e0-62f8b8db8451 ==============================
+[0m06:59:19.862110 [info ] [MainThread]: Running with dbt=1.11.8
+[0m06:59:19.863402 [debug] [MainThread]: running dbt with arguments {'static_parser': 'True', 'version_check': 'True', 'invocation_command': 'dbt debug', 'send_anonymous_usage_stats': 'True', 'debug': 'False', 'cache_selected_only': 'False', 'fail_fast': 'False', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'warn_error': 'None', 'log_path': 'logs', 'log_format': 'default', 'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'no_print': 'None', 'profiles_dir': '/home/codespace/.dbt', 'use_experimental_parser': 'False', 'partial_parse': 'True', 'target_path': 'None', 'use_colors': 'True', 'quiet': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])'}
+[0m06:59:19.878692 [info ] [MainThread]: dbt version: 1.11.8
+[0m06:59:19.879542 [info ] [MainThread]: python version: 3.12.1
+[0m06:59:19.880325 [info ] [MainThread]: python path: /workspaces/dbt_learning_project/venv/bin/python3
+[0m06:59:19.881120 [info ] [MainThread]: os info: Linux-6.8.0-1044-azure-x86_64-with-glibc2.39
+[0m06:59:20.065039 [info ] [MainThread]: Using profiles dir at /home/codespace/.dbt
+[0m06:59:20.065664 [info ] [MainThread]: Using profiles.yml file at /home/codespace/.dbt/profiles.yml
+[0m06:59:20.066165 [info ] [MainThread]: Using dbt_project.yml file at /workspaces/dbt_learning_project/script/silver/dbt_project.yml
+[0m06:59:20.066674 [info ] [MainThread]: adapter type: sqlserver
+[0m06:59:20.067161 [info ] [MainThread]: adapter version: 1.9.0
+[0m06:59:20.067671 [info ] [MainThread]: Configuration:
+[0m06:59:20.068137 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m06:59:20.068616 [info ] [MainThread]:   dbt_project.yml file [[31mERROR not found[0m]
+[0m06:59:20.069075 [info ] [MainThread]: Required dependencies:
+[0m06:59:20.069585 [debug] [MainThread]: Executing "git --help"
+[0m06:59:20.072349 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--no-lazy-fetch]\n           [--no-optional-locks] [--no-advice] [--bare] [--git-dir=<path>]\n           [--work-tree=<path>] [--namespace=<name>] [--config-env=<name>=<envvar>]\n           <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone      Clone a repository into a new directory\n   init       Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add        Add file contents to the index\n   mv         Move or rename a file, a directory, or a symlink\n   restore    Restore working tree files\n   rm         Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect     Use binary search to find the commit that introduced a bug\n   diff       Show changes between commits, commit and working tree, etc\n   grep       Print lines matching a pattern\n   log        Show commit logs\n   show       Show various types of objects\n   status     Show the working tree status\n\ngrow, mark and tweak your common history\n   backfill   Download missing objects in a partial clone\n   branch     List, create, or delete branches\n   commit     Record changes to the repository\n   merge      Join two or more development histories together\n   rebase     Reapply commits on top of another base tip\n   reset      Set `HEAD` or the index to a known state\n   switch     Switch branches\n   tag        Create, list, delete or verify tags\n\ncollaborate (see also: git help workflows)\n   fetch      Download objects and refs from another repository\n   pull       Fetch from and integrate with another repository or a local branch\n   push       Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m06:59:20.073078 [debug] [MainThread]: STDERR: "b''"
+[0m06:59:20.073769 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m06:59:20.074325 [info ] [MainThread]: Connection:
+[0m06:59:20.074918 [info ] [MainThread]:   server: localhost
+[0m06:59:20.075466 [info ] [MainThread]:   database: Dbt_DB
+[0m06:59:20.075980 [info ] [MainThread]:   schema: dbo
+[0m06:59:20.076537 [info ] [MainThread]:   UID: sa
+[0m06:59:20.077049 [info ] [MainThread]:   client_id: None
+[0m06:59:20.077589 [info ] [MainThread]:   authentication: sql
+[0m06:59:20.078106 [info ] [MainThread]:   encrypt: False
+[0m06:59:20.078687 [info ] [MainThread]:   trust_cert: True
+[0m06:59:20.079203 [info ] [MainThread]:   retries: 3
+[0m06:59:20.079802 [info ] [MainThread]:   login_timeout: 0
+[0m06:59:20.080357 [info ] [MainThread]:   query_timeout: 0
+[0m06:59:20.080969 [info ] [MainThread]:   trace_flag: False
+[0m06:59:20.081506 [info ] [MainThread]:   port: 1433
+[0m06:59:20.082158 [info ] [MainThread]: Registered adapter: sqlserver=1.9.0
+[0m06:59:20.234194 [debug] [MainThread]: Acquiring new sqlserver connection 'debug'
+[0m06:59:20.234791 [debug] [MainThread]: Using sqlserver connection "debug"
+[0m06:59:20.235214 [debug] [MainThread]: On debug: select 1 as id
+[0m06:59:20.235649 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m06:59:20.236110 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m06:59:35.489213 [debug] [MainThread]: sqlserver adapter: Got a retryable error when attempting to open a sqlserver connection.
+3 attempts remaining. Retrying in 1 seconds.
+Error:
+('HYT00', '[HYT00] [Microsoft][ODBC Driver 18 for SQL Server]Login timeout expired (0) (SQLDriverConnect)')
+[0m06:59:36.490112 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m06:59:51.491882 [debug] [MainThread]: sqlserver adapter: Got a retryable error when attempting to open a sqlserver connection.
+2 attempts remaining. Retrying in 1 seconds.
+Error:
+('HYT00', '[HYT00] [Microsoft][ODBC Driver 18 for SQL Server]Login timeout expired (0) (SQLDriverConnect)')
+[0m06:59:52.492811 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m07:00:07.494629 [debug] [MainThread]: sqlserver adapter: Got a retryable error when attempting to open a sqlserver connection.
+1 attempts remaining. Retrying in 1 seconds.
+Error:
+('HYT00', '[HYT00] [Microsoft][ODBC Driver 18 for SQL Server]Login timeout expired (0) (SQLDriverConnect)')
+[0m07:00:08.495476 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m07:00:12.999728 [debug] [MainThread]: fabric adapter: Error running SQL: select 1 as id
+[0m07:00:13.000446 [debug] [MainThread]: fabric adapter: Rolling back transaction.
+[0m07:00:13.001021 [debug] [MainThread]: On debug: No close available on handle
+[0m07:00:13.001782 [info ] [MainThread]:   Connection test: [[31mERROR[0m]
+
+[0m07:00:13.002504 [info ] [MainThread]: [31m2 checks failed:[0m
+[0m07:00:13.003270 [info ] [MainThread]: Project loading failed for the following reason:
+ project path </workspaces/dbt_learning_project/script/silver/dbt_project.yml> not found
+
+[0m07:00:13.004103 [info ] [MainThread]: dbt was unable to connect to the specified database.
+The database returned the following error:
+
+  >Database Error
+  ('08001', '[08001] [Microsoft][ODBC Driver 18 for SQL Server]TCP Provider: Error code 0x2749 (10057) (SQLDriverConnect)')
+
+Check your database credentials and try again. For more information, visit:
+https://docs.getdbt.com/docs/configure-your-profile
+
+
+[0m07:00:13.005782 [debug] [MainThread]: Resource report: {"command_name": "debug", "command_success": false, "command_wall_clock_time": 53.22587, "process_in_blocks": "4848", "process_kernel_time": 0.341238, "process_mem_max_rss": "124180", "process_out_blocks": "32", "process_user_time": 1.816944}
+[0m07:00:13.006938 [debug] [MainThread]: Command `dbt debug` failed at 07:00:13.006761 after 53.23 seconds
+[0m07:00:13.008079 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m07:00:13.009949 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x71c8f64f42c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x71c8f44def60>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x71c8f46afb00>]}
+[0m07:00:13.011108 [debug] [MainThread]: Flushing usage events
+[0m07:00:13.988139 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m07:00:28.841689 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x784279d9aea0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x784277673320>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x784277f1dbb0>]}
+
+
+============================== 07:00:28.847804 | 6c442ec7-9986-420e-a8fd-7b50ebdb0a8f ==============================
+[0m07:00:28.847804 [info ] [MainThread]: Running with dbt=1.11.8
+[0m07:00:28.848722 [debug] [MainThread]: running dbt with arguments {'debug': 'False', 'send_anonymous_usage_stats': 'True', 'printer_width': '80', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'introspect': 'True', 'use_colors': 'True', 'log_format': 'default', 'target_path': 'None', 'version_check': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'log_path': 'logs', 'static_parser': 'True', 'write_json': 'True', 'no_print': 'None', 'cache_selected_only': 'False', 'fail_fast': 'False', 'quiet': 'False', 'profiles_dir': '/home/codespace/.dbt', 'log_cache_events': 'False', 'invocation_command': 'dbt debug', 'empty': 'None', 'partial_parse': 'True', 'warn_error': 'None'}
+[0m07:00:28.861693 [info ] [MainThread]: dbt version: 1.11.8
+[0m07:00:28.862351 [info ] [MainThread]: python version: 3.12.1
+[0m07:00:28.863074 [info ] [MainThread]: python path: /workspaces/dbt_learning_project/venv/bin/python3
+[0m07:00:28.863678 [info ] [MainThread]: os info: Linux-6.8.0-1044-azure-x86_64-with-glibc2.39
+[0m07:00:29.076379 [info ] [MainThread]: Using profiles dir at /home/codespace/.dbt
+[0m07:00:29.077103 [info ] [MainThread]: Using profiles.yml file at /home/codespace/.dbt/profiles.yml
+[0m07:00:29.077703 [info ] [MainThread]: Using dbt_project.yml file at /workspaces/dbt_learning_project/script/silver/dbt_project.yml
+[0m07:00:29.078252 [info ] [MainThread]: adapter type: sqlserver
+[0m07:00:29.078798 [info ] [MainThread]: adapter version: 1.9.0
+[0m07:00:29.079339 [info ] [MainThread]: Configuration:
+[0m07:00:29.079884 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m07:00:29.080392 [info ] [MainThread]:   dbt_project.yml file [[31mERROR not found[0m]
+[0m07:00:29.080920 [info ] [MainThread]: Required dependencies:
+[0m07:00:29.081474 [debug] [MainThread]: Executing "git --help"
+[0m07:00:29.084742 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--no-lazy-fetch]\n           [--no-optional-locks] [--no-advice] [--bare] [--git-dir=<path>]\n           [--work-tree=<path>] [--namespace=<name>] [--config-env=<name>=<envvar>]\n           <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone      Clone a repository into a new directory\n   init       Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add        Add file contents to the index\n   mv         Move or rename a file, a directory, or a symlink\n   restore    Restore working tree files\n   rm         Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect     Use binary search to find the commit that introduced a bug\n   diff       Show changes between commits, commit and working tree, etc\n   grep       Print lines matching a pattern\n   log        Show commit logs\n   show       Show various types of objects\n   status     Show the working tree status\n\ngrow, mark and tweak your common history\n   backfill   Download missing objects in a partial clone\n   branch     List, create, or delete branches\n   commit     Record changes to the repository\n   merge      Join two or more development histories together\n   rebase     Reapply commits on top of another base tip\n   reset      Set `HEAD` or the index to a known state\n   switch     Switch branches\n   tag        Create, list, delete or verify tags\n\ncollaborate (see also: git help workflows)\n   fetch      Download objects and refs from another repository\n   pull       Fetch from and integrate with another repository or a local branch\n   push       Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m07:00:29.085639 [debug] [MainThread]: STDERR: "b''"
+[0m07:00:29.086207 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m07:00:29.086802 [info ] [MainThread]: Connection:
+[0m07:00:29.087334 [info ] [MainThread]:   server: localhost
+[0m07:00:29.087882 [info ] [MainThread]:   database: Dbt_DB
+[0m07:00:29.088380 [info ] [MainThread]:   schema: dbo
+[0m07:00:29.088942 [info ] [MainThread]:   UID: sa
+[0m07:00:29.089460 [info ] [MainThread]:   client_id: None
+[0m07:00:29.089960 [info ] [MainThread]:   authentication: sql
+[0m07:00:29.090508 [info ] [MainThread]:   encrypt: False
+[0m07:00:29.091159 [info ] [MainThread]:   trust_cert: True
+[0m07:00:29.091763 [info ] [MainThread]:   retries: 3
+[0m07:00:29.092339 [info ] [MainThread]:   login_timeout: 0
+[0m07:00:29.092942 [info ] [MainThread]:   query_timeout: 0
+[0m07:00:29.093637 [info ] [MainThread]:   trace_flag: False
+[0m07:00:29.094368 [info ] [MainThread]:   port: 1433
+[0m07:00:29.095282 [info ] [MainThread]: Registered adapter: sqlserver=1.9.0
+[0m07:00:29.257547 [debug] [MainThread]: Acquiring new sqlserver connection 'debug'
+[0m07:00:29.258189 [debug] [MainThread]: Using sqlserver connection "debug"
+[0m07:00:29.259957 [debug] [MainThread]: On debug: select 1 as id
+[0m07:00:29.260712 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m07:00:29.261534 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m07:00:29.266037 [debug] [MainThread]: sqlserver adapter: Got a retryable error when attempting to open a sqlserver connection.
+3 attempts remaining. Retrying in 1 seconds.
+Error:
+('08001', '[08001] [Microsoft][ODBC Driver 18 for SQL Server]Client unable to establish connection because an error was encountered during handshakes before login. Common causes include client attempting to connect to an unsupported version of SQL Server, server too busy to accept new connections or a resource limitation (memory or maximum allowed connections) on the server. (26) (SQLDriverConnect)')
+[0m07:00:30.266753 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m07:00:30.268330 [debug] [MainThread]: sqlserver adapter: Got a retryable error when attempting to open a sqlserver connection.
+2 attempts remaining. Retrying in 1 seconds.
+Error:
+('08001', '[08001] [Microsoft][ODBC Driver 18 for SQL Server]Client unable to establish connection because an error was encountered during handshakes before login. Common causes include client attempting to connect to an unsupported version of SQL Server, server too busy to accept new connections or a resource limitation (memory or maximum allowed connections) on the server. (26) (SQLDriverConnect)')
+[0m07:00:31.269094 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m07:00:31.271232 [debug] [MainThread]: sqlserver adapter: Got a retryable error when attempting to open a sqlserver connection.
+1 attempts remaining. Retrying in 1 seconds.
+Error:
+('08001', '[08001] [Microsoft][ODBC Driver 18 for SQL Server]Client unable to establish connection because an error was encountered during handshakes before login. Common causes include client attempting to connect to an unsupported version of SQL Server, server too busy to accept new connections or a resource limitation (memory or maximum allowed connections) on the server. (26) (SQLDriverConnect)')
+[0m07:00:32.272317 [debug] [MainThread]: sqlserver adapter: Using connection string: DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;Database=Dbt_DB;UID={sa};PWD=***;encrypt=No;TrustServerCertificate=Yes;APP=dbt-sqlserver/1.9.0
+[0m07:00:32.274586 [debug] [MainThread]: fabric adapter: Error running SQL: select 1 as id
+[0m07:00:32.275099 [debug] [MainThread]: fabric adapter: Rolling back transaction.
+[0m07:00:32.275600 [debug] [MainThread]: On debug: No close available on handle
+[0m07:00:32.276076 [info ] [MainThread]:   Connection test: [[31mERROR[0m]
+
+[0m07:00:32.276679 [info ] [MainThread]: [31m2 checks failed:[0m
+[0m07:00:32.277148 [info ] [MainThread]: Project loading failed for the following reason:
+ project path </workspaces/dbt_learning_project/script/silver/dbt_project.yml> not found
+
+[0m07:00:32.277685 [info ] [MainThread]: dbt was unable to connect to the specified database.
+The database returned the following error:
+
+  >Database Error
+  ('08001', '[08001] [Microsoft][ODBC Driver 18 for SQL Server]Client unable to establish connection because an error was encountered during handshakes before login. Common causes include client attempting to connect to an unsupported version of SQL Server, server too busy to accept new connections or a resource limitation (memory or maximum allowed connections) on the server. (26) (SQLDriverConnect)')
+
+Check your database credentials and try again. For more information, visit:
+https://docs.getdbt.com/docs/configure-your-profile
+
+
+[0m07:00:32.278894 [debug] [MainThread]: Resource report: {"command_name": "debug", "command_success": false, "command_wall_clock_time": 3.509845, "process_in_blocks": "0", "process_kernel_time": 0.331382, "process_mem_max_rss": "124304", "process_out_blocks": "16", "process_user_time": 2.019645}
+[0m07:00:32.279713 [debug] [MainThread]: Command `dbt debug` failed at 07:00:32.279596 after 3.51 seconds
+[0m07:00:32.280187 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m07:00:32.280699 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x784277526b70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x784277e317f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x784276eafa40>]}
+[0m07:00:32.281402 [debug] [MainThread]: Flushing usage events
+[0m07:00:33.087848 [debug] [MainThread]: An error was encountered while trying to flush usage events
