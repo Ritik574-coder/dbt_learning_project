@@ -108,20 +108,35 @@ FROM bronze.customers ;
 --=============================== customers gender column cleaning ============================
 --=============================================================================================
 SELECT DISTINCT 
-    gender
+    TRIM(LOWER(gender)) AS gender
 FROM bronze.customers ;
 
 
--- data issuces 
---NULL
---F
---FEMALE
---M
---MALE
---NB
---Non-Binary
---Other
---Prefer not to say
+SELECT 
+    CASE TRIM(LOWER(gender))
+        WHEN 'f' THEN 'Female'
+        WHEN 'female' THEN 'Female'
+        WHEN 'm' THEN 'Male'
+        WHEN 'male' THEN 'Male'
+        WHEN 'nb' THEN 'Non-Binary'
+        WHEN 'non-binary' THEN 'Non-Binary'
+        WHEN 'other' THEN 'Other'
+        WHEN 'prefer not to say' THEN 'Other'
+        ELSE 'Unknown'
+    END as gender
+FROM bronze.customers
+
+--=============================================================================================
+--=============================== customers company column cleaning ===========================
+--=============================================================================================
+
+SELECT DISTINCT
+CASE 
+    WHEN company IS NULL THEN 'Unknown'
+    WHEN TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), '')) = '' THEN 'Unknown'
+    ELSE TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), ''))
+END AS company
+FROM bronze.customers;
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
@@ -130,7 +145,17 @@ SELECT TOP (1000) [customer_id]
       ,[first_name]
       ,[last_name]
       ,[full_name]
-      ,[gender]
+      ,CASE TRIM(LOWER(gender))
+            WHEN 'f' THEN 'Female'
+            WHEN 'female' THEN 'Female'
+            WHEN 'm' THEN 'Male'
+            WHEN 'male' THEN 'Male'
+            WHEN 'nb' THEN 'Non-Binary'
+            WHEN 'non-binary' THEN 'Non-Binary'
+            WHEN 'other' THEN 'Other'
+            WHEN 'prefer not to say' THEN 'Other'
+            ELSE 'Unknown'
+        END as gender
       ,[date_of_birth]
       ,[age]
       ,[email]
@@ -172,7 +197,11 @@ SELECT TOP (1000) [customer_id]
             ELSE 'Unknown'
         END as preferred_channel
       ,[annual_income_usd]
-      ,[company]
+      ,CASE 
+            WHEN company IS NULL THEN 'Unknown'
+            WHEN TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), '')) = '' THEN 'Unknown'
+            ELSE TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), ''))
+        END as company
 FROM [bronze].[customers]
 
 
