@@ -30,7 +30,7 @@ SELECT TOP (1000) [customer_id]
       ,[preferred_channel]
       ,[annual_income_usd]
       ,[company]
-FROM [Dbt_DB].[bronze].[customers]
+FROM [bronze].[customers]
 
 --=============================================================================================
 --========================= customers id NULL and buplicate count =============================
@@ -65,8 +65,7 @@ SELECT DISTINCT
 FROM bronze.customers ;
 
 
-SELECT 
-DISTINCT
+SELECT DISTINCT
 CASE TRIM(LOWER(is_active))
     WHEN '0'        THEN 'False'
     WHEN '1'        THEN 'True'
@@ -78,9 +77,51 @@ CASE TRIM(LOWER(is_active))
     WHEN 'y'        THEN 'True'
     WHEN 'no'       THEN 'False'
     WHEN 'yes'      THEN 'True'
+    ELSE 'Unknown'
 END AS is_active
 FROM bronze.customers ;
 
+--=============================================================================================
+--=========================== customers preferred_channel cleaning ============================
+--=============================================================================================
+SELECT DISTINCT 
+    TRIM(LOWER(preferred_channel)) AS preferred_channel
+FROM bronze.customers ;
+
+SELECT DISTINCT
+    CASE TRIM(LOWER(preferred_channel))
+        WHEN 'app'        THEN 'Mobile App'
+        WHEN 'mobile app' THEN 'Mobile App'
+        WHEN 'mobile'     THEN 'Mobile App'
+        WHEN 'in store'   THEN 'In Store'
+        WHEN 'in-store'   THEN 'In Store'
+        WHEN 'store'      THEN 'In Store'
+        WHEN 'catalog'    THEN 'Catalog'
+        WHEN 'online'     THEN 'Website'
+        WHEN 'web'        THEN 'Website'
+        WHEN 'phone'      THEN 'Phone'
+        ELSE 'Unknown'
+    END as preferred_channel
+FROM bronze.customers ;
+
+--=============================================================================================
+--=============================== customers gender column cleaning ============================
+--=============================================================================================
+SELECT DISTINCT 
+    gender
+FROM bronze.customers ;
+
+
+-- data issuces 
+--NULL
+--F
+--FEMALE
+--M
+--MALE
+--NB
+--Non-Binary
+--Other
+--Prefer not to say
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
@@ -117,10 +158,22 @@ SELECT TOP (1000) [customer_id]
             WHEN 'yes'      THEN 'True'
         END AS is_active
       ,[account_created_date]
-      ,[preferred_channel]
+      ,CASE TRIM(LOWER(preferred_channel))
+            WHEN 'app'        THEN 'Mobile App'
+            WHEN 'mobile app' THEN 'Mobile App'
+            WHEN 'mobile'     THEN 'Mobile App'
+            WHEN 'in store'   THEN 'In Store'
+            WHEN 'in-store'   THEN 'In Store'
+            WHEN 'store'      THEN 'In Store'
+            WHEN 'catalog'    THEN 'Catalog'
+            WHEN 'online'     THEN 'Website'
+            WHEN 'web'        THEN 'Website'
+            WHEN 'phone'      THEN 'Phone Call'
+            ELSE 'Unknown'
+        END as preferred_channel
       ,[annual_income_usd]
       ,[company]
-FROM [Dbt_DB].[bronze].[customers]
+FROM [bronze].[customers]
 
 
 
