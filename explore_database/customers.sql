@@ -137,6 +137,78 @@ CASE
     ELSE TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), ''))
 END AS company
 FROM bronze.customers;
+
+--=============================================================================================
+--=============================== customers country column cleaning ===========================
+--=============================================================================================
+SELECT DISTINCT 
+    TRIM(LOWER(country)) AS country
+FROM bronze.customers ;
+
+SELECT DISTINCT
+CASE TRIM(LOWER(country))
+    WHEN 'u.s.a'         THEN 'United States'
+    WHEN 'us'            THEN 'United States'
+    WHEN 'usa'           THEN 'United States'
+    WHEN 'united states' THEN 'United States'
+    ELSE 'Unknown'
+END as country
+FROM bronze.customers;
+
+--=============================================================================================
+--=============================== customers customer_segment cleaning =========================
+--=============================================================================================
+SELECT DISTINCT 
+    customer_segment
+FROM bronze.customers
+
+SELECT DISTINCT
+CASE 
+    WHEN customer_segment IS NULL THEN 'Unknown'
+    ELSE customer_segment
+END as customer_segment
+FROM bronze.customers
+
+--=============================================================================================
+--================================== customers rigion cleaning ================================
+--=============================================================================================
+SELECT DISTINCT
+    region
+FROM bronze.customers ;
+
+SELECT DISTINCT
+    CASE 
+        WHEN TRIM(region) IS NULL THEN 'Unknown'
+        ELSE TRIM(region)
+    END as region
+FROM bronze.customers ;
+
+--=============================================================================================
+--============================ customers annual_income_usd cleaning ===========================
+--=============================================================================================
+--total count
+SELECT COUNT(*) FROM bronze.customers ;
+
+-- null value count 
+SELECT 
+    annual_income_usd,
+    COUNT(*) as null_count
+FROM bronze.customers 
+WHERE annual_income_usd IS NULL
+GROUP BY annual_income_usd;
+
+-- Diagnose NULLs
+SELECT 
+    COUNT(*) as total_row,
+    COUNT(annual_income_usd) as non_null,
+    COUNT(*) - COUNT(annual_income_usd) as total_null
+FROM bronze.customers
+
+--check pattern
+SELECT * 
+FROM bronze.customers
+WHERE annual_income_usd IS NULL ;
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
@@ -166,10 +238,25 @@ SELECT TOP (1000) [customer_id]
       ,[state_abbr]
       ,[state_full]
       ,[zip_code]
-      ,[country]
-      ,[region]
-      ,[customer_segment]
+      ,CASE TRIM(LOWER(country))
+            WHEN 'u.s.a'         THEN 'United States'
+            WHEN 'us'            THEN 'United States'
+            WHEN 'usa'           THEN 'United States'
+            WHEN 'united states' THEN 'United States'
+            ELSE 'Unknown'
+       END as country
+
+      ,CASE 
+            WHEN region IS NULL OR TRIM(region) = '' THEN 'Unknown'
+            ELSE TRIM(region)
+       END as region
+
+      ,CASE 
+            WHEN customer_segment IS NULL THEN 'Unknown'
+            ELSE customer_segment
+       END as customer_segment
       ,[loyalty_points]
+
       ,CASE TRIM(LOWER(is_active))
             WHEN '0'        THEN 'False'
             WHEN '1'        THEN 'True'
@@ -181,8 +268,11 @@ SELECT TOP (1000) [customer_id]
             WHEN 'y'        THEN 'True'
             WHEN 'no'       THEN 'False'
             WHEN 'yes'      THEN 'True'
+            ELSE 'Unknown'
         END AS is_active
+
       ,[account_created_date]
+
       ,CASE TRIM(LOWER(preferred_channel))
             WHEN 'app'        THEN 'Mobile App'
             WHEN 'mobile app' THEN 'Mobile App'
@@ -196,7 +286,9 @@ SELECT TOP (1000) [customer_id]
             WHEN 'phone'      THEN 'Phone Call'
             ELSE 'Unknown'
         END as preferred_channel
+        
       ,[annual_income_usd]
+
       ,CASE 
             WHEN company IS NULL THEN 'Unknown'
             WHEN TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), '')) = '' THEN 'Unknown'
