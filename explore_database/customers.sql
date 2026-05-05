@@ -228,6 +228,7 @@ SELECT TOP (1000) [customer_id]
             WHEN 'prefer not to say' THEN 'Other'
             ELSE 'Unknown'
         END as gender
+        
       ,[date_of_birth]
       ,[age]
       ,[email]
@@ -238,6 +239,7 @@ SELECT TOP (1000) [customer_id]
       ,[state_abbr]
       ,[state_full]
       ,[zip_code]
+
       ,CASE TRIM(LOWER(country))
             WHEN 'u.s.a'         THEN 'United States'
             WHEN 'us'            THEN 'United States'
@@ -255,6 +257,7 @@ SELECT TOP (1000) [customer_id]
             WHEN customer_segment IS NULL THEN 'Unknown'
             ELSE customer_segment
        END as customer_segment
+
       ,[loyalty_points]
 
       ,CASE TRIM(LOWER(is_active))
