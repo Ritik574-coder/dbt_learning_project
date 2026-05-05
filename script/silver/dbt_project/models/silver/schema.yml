@@ -1,8 +1,5 @@
 version: 2
 
-# =========================
-#  SOURCE DEFINITIONS
-# =========================
 sources:
   - name: bronze
     database: Dbt_DB
@@ -10,82 +7,132 @@ sources:
 
     tables:
       - name: customers
-        description: "Raw customers data loaded from source system"
+        description: |
+          Raw customer data ingested from the source operational system (CRM).
+
+          This table represents the bronze layer and contains unprocessed,
+          source-aligned records with minimal transformations.
+
+          It serves as the foundation for downstream staging models in DBT.
+
+          Data Characteristics:
+          - May contain nulls, duplicates, and inconsistent formats
+          - Reflects source system structure without cleaning
+          - Updated based on ingestion frequency (e.g., daily batch)
 
         columns:
+
           - name: customer_id
-            description: "Unique identifier for each customer"
-            tests: [not_null]
+            description: |
+              Unique identifier assigned to each customer in the source system.
+              Acts as the primary key for customer records.
+            tests: [not_null, unique]
 
           - name: title
-            description: "Customer title (Mr, Ms, Dr, etc.)"
+            description: |
+              Honorific or title of the customer (e.g., Mr, Ms, Dr).
+              May contain inconsistent formatting from source.
 
           - name: first_name
-            description: "Customer first name"
+            description: |
+              Given name of the customer.
+              Raw value without standardization.
 
           - name: last_name
-            description: "Customer last name"
+            description: |
+              Family name or surname of the customer.
 
           - name: full_name
-            description: "Concatenated full name of the customer"
+            description: |
+              Full name constructed from first and last name.
+              May include inconsistencies depending on source formatting.
 
           - name: gender
-            description: "Customer gender"
+            description: |
+              Gender of the customer.
+              Possible values may include inconsistent formats
+              such as 'M', 'F', 'Male', 'Female', etc.
 
           - name: date_of_birth
-            description: "Date of birth of the customer"
+            description: |
+              Date of birth of the customer.
+              Used for age calculation and demographic analysis.
 
           - name: age
-            description: "Age of the customer in years"
+            description: |
+              Age of the customer in years.
+              May be derived or directly provided by source system.
 
           - name: email
-            description: "Customer email address"
-            tests: [not_null]
+            description: |
+              Email address of the customer.
+              Not guaranteed to be unique or validated.
 
           - name: phone
-            description: "Customer phone number"
+            description: |
+              Contact phone number of the customer.
+              Format may vary across records.
 
           - name: address
-            description: "Customer full address"
+            description: |
+              Full address string of the customer.
+              May include street, locality, and additional details.
 
           - name: city
-            description: "City where customer resides"
+            description: |
+              City where the customer resides.
 
           - name: state
-            description: "State name"
+            description: |
+              State or province name.
 
           - name: state_abbr
-            description: "State abbreviation"
+            description: |
+              Abbreviated form of the state name.
 
           - name: state_full
-            description: "Full state name"
+            description: |
+              Full standardized state name.
 
           - name: zip_code
-            description: "Postal ZIP code"
+            description: |
+              Postal or ZIP code of the customer address.
 
           - name: country
-            description: "Country name"
+            description: |
+              Country of residence.
 
           - name: region
-            description: "Geographical region"
+            description: |
+              Geographical region classification (e.g., North, South).
 
           - name: customer_segment
-            description: "Customer segmentation category"
+            description: |
+              Business-defined segmentation category
+              (e.g., Retail, Corporate, VIP).
 
           - name: loyalty_points
-            description: "Accumulated loyalty reward points"
+            description: |
+              Total loyalty reward points accumulated by the customer.
 
           - name: is_active
-            description: "Indicates whether the customer is active"
+            description: |
+              Boolean flag indicating whether the customer account is active.
 
           - name: account_created_date
-            description: "Date when the customer account was created"
+            description: |
+              Timestamp indicating when the customer account was created.
 
           - name: preferred_channel
-            description: "Preferred communication channel"
+            description: |
+              Preferred communication channel of the customer
+              (e.g., Email, Phone, SMS).
 
           - name: annual_income_usd
-            description: "Annual income of customer in USD"
+            description: |
+              Estimated or declared annual income of the customer in USD.
 
           - name: company
-            description: "Company name associated with the customer"
+            description: |
+              Organization or company associated with the customer.
+              May be null for individual customers.
