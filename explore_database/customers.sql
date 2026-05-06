@@ -209,6 +209,18 @@ SELECT *
 FROM bronze.customers
 WHERE annual_income_usd IS NULL ;
 
+-- handling null value with using median
+SELECT 
+customer_segment,
+COALESCE(
+    annual_income_usd,
+    PERCENTILE_CONT(0.5)
+    WITHIN GROUP (ORDER BY annual_income_usd)
+    OVER(PARTITION BY customer_segment)
+) as annual_income_usd
+FROM bronze.customers ; 
+
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
