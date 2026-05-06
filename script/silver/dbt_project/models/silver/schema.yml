@@ -7,132 +7,188 @@ sources:
 
     tables:
       - name: customers
-        description: |
-          Raw customer data ingested from the source operational system (CRM).
 
-          This table represents the bronze layer and contains unprocessed,
-          source-aligned records with minimal transformations.
+        description: >
+          Raw customer dataset ingested from the CRM source system into the bronze layer.
+          This table preserves source-aligned records before downstream business
+          transformations and standardization in the silver layer.
 
-          It serves as the foundation for downstream staging models in DBT.
+        meta:
+          layer: bronze
 
-          Data Characteristics:
-          - May contain nulls, duplicates, and inconsistent formats
-          - Reflects source system structure without cleaning
-          - Updated based on ingestion frequency (e.g., daily batch)
+          ingestion_type: batch
+
+          data_characteristics:
+            - Source-aligned raw records
+            - Minimal transformation applied
+            - May contain nulls, duplicates, inconsistent casing, and formatting issues
+
+          profiling_summary:
+            - Duplicate customer_id values were identified and profiled
+            - Multiple categorical columns contain inconsistent source values
+            - loyalty_points contains unresolved NULL values across customer segments
+            - annual_income_usd contains missing values suitable for statistical imputation
+
+          downstream_usage:
+            - Source for silver customer transformation models
+            - Used for customer standardization and semantic validation workflows
 
         columns:
 
           - name: customer_id
-            description: |
-              Unique identifier assigned to each customer in the source system.
-              Acts as the primary key for customer records.
-            tests: [not_null, unique]
+            description: "Unique identifier for a customer record."
+
+            tests:
+              - not_null
+              - unique
+
+            meta:
+              profiling_note: >
+                Duplicate and NULL checks were performed during profiling.
 
           - name: title
-            description: |
-              Honorific or title of the customer (e.g., Mr, Ms, Dr).
-              May contain inconsistent formatting from source.
+            description: "Customer title or honorific."
 
           - name: first_name
-            description: |
-              Given name of the customer.
-              Raw value without standardization.
+            description: "Customer first name from source system."
 
           - name: last_name
-            description: |
-              Family name or surname of the customer.
+            description: "Customer last name from source system."
 
           - name: full_name
-            description: |
-              Full name constructed from first and last name.
-              May include inconsistencies depending on source formatting.
+            description: "Customer full display name."
 
           - name: gender
-            description: |
-              Gender of the customer.
-              Possible values may include inconsistent formats
-              such as 'M', 'F', 'Male', 'Female', etc.
+            description: "Customer gender category."
+
+            meta:
+              transformation_logic: >
+                Source gender values are standardized using CASE-based mappings.
+
+              standardized_values:
+                - Male
+                - Female
+                - Non-Binary
+                - Other
+                - Unknown
 
           - name: date_of_birth
-            description: |
-              Date of birth of the customer.
-              Used for age calculation and demographic analysis.
+            description: "Customer date of birth."
 
           - name: age
-            description: |
-              Age of the customer in years.
-              May be derived or directly provided by source system.
+            description: "Customer age in years."
 
           - name: email
-            description: |
-              Email address of the customer.
-              Not guaranteed to be unique or validated.
+            description: "Customer email address."
 
           - name: phone
-            description: |
-              Contact phone number of the customer.
-              Format may vary across records.
+            description: "Customer phone number."
 
           - name: address
-            description: |
-              Full address string of the customer.
-              May include street, locality, and additional details.
+            description: "Customer address."
 
           - name: city
-            description: |
-              City where the customer resides.
+            description: "Customer city."
 
           - name: state
-            description: |
-              State or province name.
+            description: "Customer state or province."
 
           - name: state_abbr
-            description: |
-              Abbreviated form of the state name.
+            description: "Abbreviated state code."
 
           - name: state_full
-            description: |
-              Full standardized state name.
+            description: "Standardized full state name."
 
           - name: zip_code
-            description: |
-              Postal or ZIP code of the customer address.
+            description: "Postal or ZIP code."
 
           - name: country
-            description: |
-              Country of residence.
+            description: "Customer country."
+
+            meta:
+              transformation_logic: >
+                Country values are normalized into standardized country names.
+
+              standardized_values:
+                - United States
+                - Unknown
 
           - name: region
-            description: |
-              Geographical region classification (e.g., North, South).
+            description: "Customer geographic region."
+
+            meta:
+              transformation_logic: >
+                NULL and blank region values are standardized to 'Unknown'.
 
           - name: customer_segment
-            description: |
-              Business-defined segmentation category
-              (e.g., Retail, Corporate, VIP).
+            description: "Business-defined customer segmentation category."
+
+            meta:
+              profiling_note: >
+                NULL values were identified and standardized during transformation.
 
           - name: loyalty_points
-            description: |
-              Total loyalty reward points accumulated by the customer.
+            description: >
+              Loyalty points associated with customer purchases and engagement activity.
+
+            meta:
+              data_quality_note: >
+                NULL values exist across multiple customer segments,
+                including Platinum customers.
+
+              semantic_validation_note: >
+                Segment distribution analysis suggests potential business-rule
+                inconsistencies because higher-tier customer segments are expected
+                to correlate with loyalty engagement levels.
+
+              transformation_strategy: >
+                loyalty_points NULL values were intentionally preserved because
+                no validated business rule was available for safe replacement.
 
           - name: is_active
-            description: |
-              Boolean flag indicating whether the customer account is active.
+            description: "Customer account active status."
+
+            meta:
+              transformation_logic: >
+                Multiple source representations were standardized into boolean-like values.
+
+              standardized_values:
+                - "True"
+                - "False"
+                - "Unknown"
 
           - name: account_created_date
-            description: |
-              Timestamp indicating when the customer account was created.
+            description: "Customer account creation timestamp."
 
           - name: preferred_channel
-            description: |
-              Preferred communication channel of the customer
-              (e.g., Email, Phone, SMS).
+            description: "Customer preferred communication or engagement channel."
+
+            meta:
+              transformation_logic: >
+                Source channel values were standardized into unified business categories.
+
+              standardized_values:
+                - Mobile App
+                - Website
+                - In Store
+                - Catalog
+                - Phone Call
+                - Unknown
 
           - name: annual_income_usd
-            description: |
-              Estimated or declared annual income of the customer in USD.
+            description: "Estimated annual customer income in USD."
+
+            meta:
+              null_handling_strategy: >
+                Missing values are replaced using median annual income
+                within each customer_segment.
+
+              imputation_method: >
+                PERCENTILE_CONT median imputation partitioned by customer_segment.
 
           - name: company
-            description: |
-              Organization or company associated with the customer.
-              May be null for individual customers.
+            description: "Customer-associated company or organization."
+
+            meta:
+              transformation_logic: >
+                NULL, blank, and line-break-only values are standardized to 'Unknown'.
