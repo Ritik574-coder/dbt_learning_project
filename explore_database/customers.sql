@@ -209,6 +209,63 @@ SELECT *
 FROM bronze.customers
 WHERE annual_income_usd IS NULL ;
 
+-- handling null value with using median
+SELECT 
+customer_segment,
+COALESCE(
+    annual_income_usd,
+    PERCENTILE_CONT(0.5)
+    WITHIN GROUP (ORDER BY annual_income_usd)
+    OVER(PARTITION BY customer_segment)
+) as annual_income_usd
+FROM bronze.customers ; 
+--=============================================================================================
+--============================ customers loyalty_points cleaning ==============================
+--=============================================================================================
+-- root cause analysis to understood why loyalty_points some value are null
+SELECT 
+    TOP 100 *
+FROM bronze.customers 
+WHERE loyalty_points IS NULL ;
+
+-- loyalty_points data profiling
+SELECT 
+    customer_id ,
+    TRIM(full_name) as full_name,
+    TRIM(city) as city,
+    TRIM(state_full) as state_name,
+    zip_code,
+    CASE TRIM(LOWER(gender))
+        WHEN 'f' THEN 'Female'
+        WHEN 'female' THEN 'Female'
+        WHEN 'm' THEN 'Male'
+        WHEN 'male' THEN 'Male'
+        WHEN 'nb' THEN 'Non-Binary'
+        WHEN 'non-binary' THEN 'Non-Binary'
+        WHEN 'other' THEN 'Other'
+        WHEN 'prefer not to say' THEN 'Other'
+        ELSE 'Unknown'
+    END as gender,
+    CASE TRIM(LOWER(preferred_channel))
+        WHEN 'app'        THEN 'Mobile App'
+        WHEN 'mobile app' THEN 'Mobile App'
+        WHEN 'mobile'     THEN 'Mobile App'
+        WHEN 'in store'   THEN 'In Store'
+        WHEN 'in-store'   THEN 'In Store'
+        WHEN 'store'      THEN 'In Store'
+        WHEN 'catalog'    THEN 'Catalog'
+        WHEN 'online'     THEN 'Website'
+        WHEN 'web'        THEN 'Website'
+        WHEN 'phone'      THEN 'Phone Call'
+        ELSE 'Unknown'
+    END as preferred_channel,
+    customer_segment,
+    loyalty_points
+FROM bronze.customers 
+WHERE loyalty_points IS NULL;
+
+--semantic validation 
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
@@ -290,7 +347,12 @@ SELECT TOP (1000) [customer_id]
             ELSE 'Unknown'
         END as preferred_channel
         
-      ,[annual_income_usd]
+      ,COALESCE(
+            annual_income_usd,
+            PERCENTILE_CONT(0.5)
+            WITHIN GROUP (ORDER BY annual_income_usd)
+            OVER (PARTITION BY customer_segment)
+      ) as annual_income_usd
 
       ,CASE 
             WHEN company IS NULL THEN 'Unknown'
