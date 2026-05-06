@@ -264,8 +264,68 @@ SELECT
 FROM bronze.customers 
 WHERE loyalty_points IS NULL;
 
---semantic validation 
+-- Semantic validation: checking NULL loyalty points by customer segment
+SELECT 
+    customer_segment,
+    COUNT(*) loyalty_points_null_count
+FROM bronze.customers
+WHERE loyalty_points IS NULL
+GROUP BY customer_segment
+ORDER BY customer_segment ;
 
+-- Semantic validation: checking NULL loyalty points by region
+SELECT 
+    region,
+    COUNT(*) loyalty_points_null_count
+FROM bronze.customers
+WHERE loyalty_points IS NULL 
+GROUP BY region 
+ORDER BY region ;
+
+-- Semantic validation: checking NULL loyalty points by region
+WITH cl_gender AS (
+    SELECT 
+        CASE TRIM(LOWER(gender))
+            WHEN 'f' THEN 'Female'
+            WHEN 'female' THEN 'Female'
+            WHEN 'm' THEN 'Male'
+            WHEN 'male' THEN 'Male'
+            WHEN 'nb' THEN 'Non-Binary'
+            WHEN 'non-binary' THEN 'Non-Binary'
+            WHEN 'other' THEN 'Other'
+            WHEN 'prefer not to say' THEN 'Other'
+            ELSE 'Unknown'
+        END as st_gender,
+        loyalty_points
+    FROM bronze.customers
+)
+SELECT 
+    st_gender,
+    COUNT(*) loyalty_points_null_count
+FROM cl_gender 
+WHERE loyalty_points IS NULL 
+GROUP BY st_gender
+ORDER BY st_gender ;
+
+-- null percentage  check 
+SELECT 
+    customer_segment,
+    COUNT(
+        CASE 
+            WHEN loyalty_points IS NULL THEN 1
+        END
+    ) AS null_count,
+    COUNT(*) AS total_customers,
+    ROUND(
+        COUNT(
+            CASE 
+                WHEN loyalty_points IS NULL THEN 1
+            END
+        ) * 100.0 / COUNT(*),2
+    ) AS null_percentage
+FROM bronze.customers
+GROUP BY customer_segment
+ORDER BY null_percentage DESC;
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
@@ -274,6 +334,7 @@ SELECT TOP (1000) [customer_id]
       ,[first_name]
       ,[last_name]
       ,[full_name]
+
       ,CASE TRIM(LOWER(gender))
             WHEN 'f' THEN 'Female'
             WHEN 'female' THEN 'Female'
