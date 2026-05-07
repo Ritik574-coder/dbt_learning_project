@@ -3,7 +3,7 @@
 Create Database and Schemas
 ========================================================================================
 Script Purpose:
-    This script creates a new database named 'Dbt_DB'.
+    This script creates a new database named 'TestDB'.
 
     If the database already exists, it will be safely dropped and recreated.
     The script also creates three schemas used in the Medallion Architecture:
@@ -12,7 +12,7 @@ Script Purpose:
         - Gold    (Business-ready layer)
 
 WARNING:
-    Running this script will permanently DROP the 'Dbt_DB' database.
+    Running this script will permanently DROP the 'TestDB' database.
     All existing data will be deleted.
 
     Ensure that proper backups are available before executing this script.
@@ -21,7 +21,7 @@ Author      : Ritik__
 Created On  : 2026-02-26
 Version     : 1.0
 Project     : Data Warehousing
-Project Name: Dbt_DB
+Project Name: TestDB
 
 Environment:
     Development / Testing
@@ -46,27 +46,27 @@ USE master ;
 GO
 
 -- Drop and recreate the BusinessDW database
-IF EXISTS(SELECT 1 FROM sys.databases WHERE name = 'Dbt_DB') 
+IF EXISTS(SELECT 1 FROM sys.databases WHERE name = 'TestDB') 
 BEGIN
-    PRINT 'Dropping databse Dbt_DB' ;
-    ALTER DATABASE Dbt_DB SET SINGLE_USER WITH ROLLBACK IMMEDIATE ;
-    DROP DATABASE Dbt_DB ;
+    PRINT 'Dropping databse TestDB' ;
+    ALTER DATABASE TestDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE ;
+    DROP DATABASE TestDB ;
 END ;
 GO
 
--- Creating database Dbt_DB 
-CREATE DATABASE Dbt_DB ;
+-- Creating database TestDB 
+CREATE DATABASE TestDB ;
 GO
 
--- Safety check: Ensure script is executed in the Dbt_DB database
-IF DB_NAME() NOT IN ('Dbt_DB')
+-- Safety check: Ensure script is executed in the TestDB database
+IF DB_NAME() NOT IN ('TestDB')
 BEGIN
-    THROW 50000, 'Execute this scrip in Dbt_DB Database only .',1 ;
+    THROW 50000, 'Execute this scrip in TestDB Database only .',1 ;
 END;
 GO
 
--- Switch to Dbt_DB database
-USE Dbt_DB ;
+-- Switch to TestDB database
+USE TestDB ;
 GO
 
 --===========================================================================

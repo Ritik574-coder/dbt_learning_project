@@ -373,10 +373,10 @@ WITH clean_zip AS
 (
     SELECT 
         CASE 
-            WHEN zip_code IS NULL OR zip_code = '' THEN 'Unknown'
-            WHEN LEN(TRIM(zip_code)) != 5 THEN 'Invalid'
-            WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 'Invalid'
-            ELSE TRIM(zip_code)
+            WHEN zip_code IS NULL THEN 0
+            WHEN LEN(zip_code) != 5 THEN 0
+            WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 0
+            ELSE zip_code
         END as zip_code
     FROM bronze.customers
 )
@@ -384,8 +384,8 @@ SELECT
     *
 FROM clean_zip
 WHERE zip_code IS NULL 
-    OR zip_code = 'Unknown' 
-    OR zip_code = 'Invalid';
+    OR zip_code = 0 
+    OR zip_code = 0;
 
 
 --#############################################################################################
@@ -420,11 +420,11 @@ SELECT TOP (1000) [customer_id]
       ,[state_full]
 
       ,CASE 
-            WHEN zip_code IS NULL OR zip_code = '' THEN 'Unknown'
-            WHEN LEN(TRIM(zip_code)) != 5 THEN 'Invalid'
-            WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 'Invalid'
-            ELSE TRIM(zip_code)
-       END as zip_code
+            WHEN zip_code IS NULL THEN 0
+            WHEN LEN(zip_code) != 5 THEN 0
+            WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 0
+            ELSE zip_code
+        END as zip_code
 
       ,CASE TRIM(LOWER(country))
             WHEN 'u.s.a'         THEN 'United States'
