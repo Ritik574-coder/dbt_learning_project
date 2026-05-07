@@ -222,6 +222,7 @@ FROM bronze.customers ;
 --=============================================================================================
 --============================ customers loyalty_points cleaning ==============================
 --=============================================================================================
+
 -- root cause analysis to understood why loyalty_points some value are null
 SELECT 
     TOP 100 *
@@ -326,14 +327,75 @@ SELECT
 FROM bronze.customers
 GROUP BY customer_segment
 ORDER BY null_percentage DESC;
+
+-- this is only for gold layer
+SELECT 
+    customer_segment,
+    CAST(COALESCE(
+        loyalty_points,
+        PERCENTILE_CONT(0.5)
+        WITHIN GROUP(ORDER BY loyalty_points)
+        OVER(PARTITION BY customer_segment)
+    )AS INT) as loyalty_points
+FROM bronze.customers ;
+
+--=============================================================================================
+--============================== customers zip_code cleaning ==================================
+--=============================================================================================
+-- customer zip_code data profiling
+SELECT DISTINCT
+    zip_code,
+    LEN(zip_code) as zip_length
+FROM bronze.customers 
+WHERE LEN(zip_code) != 5 
+OR zip_code IS NULL ;
+
+-- customer zip_code data type profiling
+SELECT 
+    *
+FROM bronze.customers
+WHERE TRY_CAST(zip_code AS INT) IS NULL
+    AND zip_code IS NOT NULL ;
+    
+-- data type check 
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE 
+TABLE_SCHEMA = 'bronze'
+    AND TABLE_NAME = 'customers'
+    AND COLUMN_NAME = 'zip_code'
+;
+
+-- fineal query after Semantic validation
+WITH clean_zip AS 
+(
+    SELECT 
+        CASE 
+            WHEN zip_code IS NULL OR zip_code = '' THEN 'Unknown'
+            WHEN LEN(TRIM(zip_code)) != 5 THEN 'Invalid'
+            WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 'Invalid'
+            ELSE TRIM(zip_code)
+        END as zip_code
+    FROM bronze.customers
+)
+SELECT 
+    *
+FROM clean_zip
+WHERE zip_code IS NULL 
+    OR zip_code = 'Unknown' 
+    OR zip_code = 'Invalid';
+
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
 SELECT TOP (1000) [customer_id]
-      ,[title]
-      ,[first_name]
-      ,[last_name]
-      ,[full_name]
+      ,TRIM(title) as title
+      ,TRIM(first_name) as first_name
+      ,TRIM(last_name) as last_name
+      ,TRIM(full_name) as full_name
 
       ,CASE TRIM(LOWER(gender))
             WHEN 'f' THEN 'Female'
@@ -356,7 +418,13 @@ SELECT TOP (1000) [customer_id]
       ,[state]
       ,[state_abbr]
       ,[state_full]
-      ,[zip_code]
+
+      ,CASE 
+            WHEN zip_code IS NULL OR zip_code = '' THEN 'Unknown'
+            WHEN LEN(TRIM(zip_code)) != 5 THEN 'Invalid'
+            WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 'Invalid'
+            ELSE TRIM(zip_code)
+       END as zip_code
 
       ,CASE TRIM(LOWER(country))
             WHEN 'u.s.a'         THEN 'United States'
@@ -421,6 +489,3 @@ SELECT TOP (1000) [customer_id]
             ELSE TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), ''))
         END as company
 FROM [bronze].[customers]
-
-
-
