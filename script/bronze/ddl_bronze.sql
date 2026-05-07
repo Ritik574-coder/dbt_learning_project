@@ -24,7 +24,7 @@ WARNING :
 Author : Ritik__
 Created on : 2026-02-25
 Version : 1.0
-project : DataWarehouse | Dbt_DB
+project : DataWarehouse | TestDB
 schema : Bronze
 
 Environment :
@@ -35,15 +35,15 @@ Dependencies :
 =============================================================================================*/
 
 -- Safety check to ensure we are connected to the correct database
-IF DB_NAME() NOT IN ('Dbt_DB')
+IF DB_NAME() NOT IN ('TestDB')
 BEGIN
-    THROW 50000, 'Error: Not connected to Dbt_DB database. Please switch to Dbt_DB before running this script.', 1;
+    THROW 50000, 'Error: Not connected to TestDB database. Please switch to TestDB before running this script.', 1;
     RETURN;
 END;
 GO
 
----- Switch to BusinessDW database
-USE Dbt_DB;
+---- Switch to TestDB database
+USE TestDB;
 GO
 
 /*=============================================================
