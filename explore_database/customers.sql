@@ -386,7 +386,45 @@ FROM clean_zip
 WHERE zip_code IS NULL 
     OR zip_code = 0 
     OR zip_code = 0;
+--=============================================================================================
+--============================== customers state_full cleaning ================================
+--=============================================================================================
+-- csutomer data profiling
+SELECT 
+    * 
+FROM bronze.customers 
+WHERE state_full IS NULL
 
+-- unique state check 
+SELECT DISTINCT 
+    state_full
+FROM bronze.customers ;
+
+-- state repation count
+SELECT DISTINCT 
+    state_full,
+COUNT(*) as total_state 
+FROM bronze.customers 
+    GROUP BY state_full 
+    HAVING COUNT(*) >= 1 
+    ORDER BY COUNT(*) DESC ;
+
+-- fineal query after Semantic validation
+SELECT DISTINCT
+    CASE 
+        WHEN TRIM(state_full) IS NULL OR TRIM(state_full) = '' THEN 'Unknown'
+        ELSE TRIM(state_full)
+    END as state_full
+FROM bronze.customers ;
+
+--=============================================================================================
+--=================================== customers state cleaning ================================
+--=============================================================================================
+SELECT DISTINCT 
+    TRIM([state]) state, 
+    TRIM(state_abbr) as state_abbr,
+    TRIM(state_full) as state_full
+FROM bronze.customers ;
 
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
@@ -415,9 +453,13 @@ SELECT TOP (1000) [customer_id]
       ,[phone]
       ,[address]
       ,[city]
-      ,[state]
+
       ,[state_abbr]
-      ,[state_full]
+      
+      ,CASE 
+            WHEN TRIM(state_full) IS NULL OR TRIM(state_full) = '' THEN 'Unknown'
+            ELSE TRIM(state_full)
+       END as state
 
       ,CASE 
             WHEN zip_code IS NULL THEN 0
@@ -440,7 +482,7 @@ SELECT TOP (1000) [customer_id]
        END as region
 
       ,CASE 
-            WHEN customer_segment IS NULL THEN 'Unknown'
+            WHEN customer_segment IS NULL OR customer_segment = '' THEN 'Unknown'
             ELSE customer_segment
        END as customer_segment
 
@@ -484,7 +526,7 @@ SELECT TOP (1000) [customer_id]
       ) as annual_income_usd
 
       ,CASE 
-            WHEN company IS NULL THEN 'Unknown'
+            WHEN company IS NULL OR company = '' THEN 'Unknown'
             WHEN TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), '')) = '' THEN 'Unknown'
             ELSE TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), ''))
         END as company
