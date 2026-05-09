@@ -667,22 +667,36 @@ WHERE TRIM(account_created_date) LIKE '__/__/____';
 SELECT 
     account_created_date,
     CASE
-        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 
-            THEN TRY_CONVERT(DATE, account_created_date, 103) -- DD/MM/YYYY
-        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 
-            THEN TRY_CONVERT(DATE, account_created_date, 101) -- MM/DD/YYYY
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 THEN TRY_CONVERT(DATE, account_created_date, 103) 
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12  THEN TRY_CONVERT(DATE, account_created_date, 101) 
         ELSE NULL
     END AS iso_date,
     CASE
-        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 
-            THEN 'DD/MM/YYYY'
-        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 
-            THEN 'MM/DD/YYYY'
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 THEN 'DD/MM/YYYY'
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 THEN 'MM/DD/YYYY'
         ELSE 'AMBIGUOUS_DATE'
     END AS parsing_status
 FROM bronze.customers
 WHERE TRIM(account_created_date) LIKE '__/__/____';
 
+
+SELECT 
+    CASE
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 THEN 'DD/MM/YYYY'
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 THEN 'MM/DD/YYYY'
+        ELSE 'AMBIGUOUS_DATE'
+    END AS detected_format,
+    COUNT(*) AS total_records,
+    ROUND(COUNT(*) * 100.0 /SUM(COUNT(*)) OVER(),2) AS percentage
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__/__/____'
+GROUP BY
+    CASE
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 THEN 'DD/MM/YYYY'
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 THEN 'MM/DD/YYYY'
+        ELSE 'AMBIGUOUS_DATE'
+    END
+ORDER BY total_records DESC;
 /*error example 
 MM/DD/YYYY or DD/MM/YYYY	187   
 Mon DD, YYYY	110               -->> done
@@ -710,12 +724,17 @@ SELECT
         WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE,account_created_date)
         WHEN TRIM(account_created_date) LIKE '____/__/__'                     THEN CONVERT(DATE,account_created_date)
         WHEN TRIM(account_created_date) LIKE '____-__-__'                     THEN CONVERT(DATE,account_created_date)
+        WHEN CAST(LEFT(account_created_date,2)AS INT) > 12                    THEN TRY_CONVERT(DATE, account_created_date,103)
+        WHEN CAST(SUBSTRING(account_created_date,4,2)AS INT) > 12             THEN TRY_CONVERT(DATE, account_created_date,101)
+        ELSE TRY_CONVERT(DATE, account_created_date,101)
     END as iso_date
 FROM bronze.customers
 WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'
     OR TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____'
     OR TRIM(account_created_date) LIKE '____/__/__'
     OR TRIM(account_created_date) LIKE '____-__-__'
+    OR CAST(LEFT(account_created_date,2)AS INT) > 12 
+    OR CAST(SUBSTRING(account_created_date,4,2)AS INT) > 12
  ;
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
