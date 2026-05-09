@@ -420,6 +420,7 @@ FROM bronze.customers ;
 --=============================================================================================
 --=================================== customers state cleaning ================================
 --=============================================================================================
+--raw data inspection
 SELECT DISTINCT 
     TRIM([state]) state, 
     TRIM(state_abbr) as state_abbr,
@@ -471,7 +472,7 @@ AND TRIM(UPPER(state)) != TRIM(UPPER(state_full)) ;
 --=============================================================================================
 --=================================== customers city cleaning =================================
 --=============================================================================================
--- customer city data profiling
+-- customer city raw data inspection
 SELECT 
 * 
 FROM bronze.customers
@@ -517,7 +518,7 @@ ORDER BY city_count DESC ;
 --=============================================================================================
 --================================ customers address cleaning =================================
 --=============================================================================================
--- data pattern check 
+-- raw data inspection in address column
 SELECT 
     address
 FROM bronze.customers
@@ -530,6 +531,88 @@ SELECT
     END as address 
 FROM bronze.customers
 
+--=============================================================================================
+--=========================== customers account_created_date cleaning =========================
+--=============================================================================================
+
+-- account_created_date raw data inspection
+SELECT 
+    account_created_date
+FROM bronze.customers ;
+
+-- account_created_date structural pattern profiling
+SELECT DISTINCT
+TRANSLATE(
+    LOWER(TRIM(account_created_date)),
+    '0123456789abcdefghijklmnopqrstuvwxyz',
+    '9999999999aaaaaaaaaaaaaaaaaaaaaaaaaa'
+) AS patter
+FROM bronze.customers
+
+-- account_created_date pattern frequency analysis and structural pattern profiling
+WITH create_date_pattern AS 
+(
+    SELECT 
+    TRANSLATE(
+        LOWER(TRIM(account_created_date)),
+        '0123456789abcdefghijklmnopqrstuvwxyz',
+        '9999999999aaaaaaaaaaaaaaaaaaaaaaaaaa'
+    ) AS pattern
+    FROM bronze.customers
+)
+SELECT 
+    pattern,
+    COUNT(*) pattern_count
+FROM create_date_pattern 
+GROUP BY pattern 
+ORDER BY COUNT(*) DESC ;
+
+-- account_created_date format classification analysis
+WITH patter_count AS 
+(
+SELECT 
+    CASE
+        WHEN account_created_date LIKE '[A-Z][a-z][a-z] __, ____' THEN 'Mon DD, YYYY'
+        WHEN account_created_date LIKE '[A-Z][a-z]% __, ____'     THEN 'Month DD, YYYY'
+        WHEN account_created_date LIKE '____-__-__'               THEN 'YYYY-MM-DD'
+        WHEN account_created_date LIKE '____/__/__'               THEN 'YYYY/MM/DD'
+        WHEN account_created_date LIKE '__-__-____'               THEN 'DD-MM-YYYY'
+        WHEN account_created_date LIKE '__/__/____'               THEN 'MM/DD/YYYY or DD/MM/YYYY'
+        ELSE 'Unknown_patter'
+    END AS detected_pattern
+FROM bronze.customers
+)
+SELECT 
+detected_pattern,
+COUNT(*) as patter_count
+FROM patter_count
+GROUP BY detected_pattern
+ORDER BY COUNT(*) DESC ;
+
+-- normalize Mon DD, YYYY dates into ISO standardization
+SELECT 
+    account_created_date,
+    CONVERT(DATE,account_created_date) AS iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____';
+
+-- normalize Month DD, YYYY dates into ISO standardization
+SELECT 
+    account_created_date,
+    CONVERT(DATE,account_created_date) AS iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____';
+
+
+SELECT DISTINCT 
+    CASE
+        WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'       THEN CONVERT(DATE,account_created_date)
+        WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE,account_created_date)
+    END as iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'
+OR TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____'
+ ;
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
