@@ -124,7 +124,7 @@ SELECT
         WHEN 'prefer not to say' THEN 'Other'
         ELSE 'Unknown'
     END as gender
-FROM bronze.customers
+FROM bronze.customers ;
 
 --=============================================================================================
 --=============================== customers company column cleaning ===========================
@@ -521,7 +521,7 @@ ORDER BY city_count DESC ;
 -- raw data inspection in address column
 SELECT 
     address
-FROM bronze.customers
+FROM bronze.customers ;
 
 -- final query after pattern validation
 SELECT
@@ -529,7 +529,7 @@ SELECT
         WHEN [address] IS NULL OR [address] = '' THEN 'Unknown'
         ELSE [address]
     END as address 
-FROM bronze.customers
+FROM bronze.customers ;
 
 --=============================================================================================
 --=========================== customers account_created_date cleaning =========================
@@ -547,7 +547,7 @@ TRANSLATE(
     '0123456789abcdefghijklmnopqrstuvwxyz',
     '9999999999aaaaaaaaaaaaaaaaaaaaaaaaaa'
 ) AS patter
-FROM bronze.customers
+FROM bronze.customers ;
 
 -- account_created_date pattern frequency analysis and structural pattern profiling
 WITH create_date_pattern AS 
@@ -603,15 +603,119 @@ SELECT
 FROM bronze.customers
 WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____';
 
+-- normalize YYYY/MM/DD dates into ISO standardization
+SELECT 
+    account_created_date,
+    CONVERT(DATE,account_created_date) AS iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '____/__/__';
 
-SELECT DISTINCT 
+-- normalize DD-MM-YYYY dates into ISO standardization
+SELECT 
+    account_created_date,
+    CONVERT(DATE,account_created_date) AS iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '____-__-__';
+
+-- normalize MM-DD-YYYY dates into ISO standardization
+SELECT 
+    account_created_date,
+    CONVERT(DATE,account_created_date) AS iso_date   -- Error --> Conversion failed when converting date and/or time from character string.
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__-__-____';
+
+-- normalize MM/DD/YYYY dates into ISO standardization
+SELECT 
+    account_created_date,
+    CONVERT(DATE,account_created_date) AS iso_date   -- Error --> Conversion failed when converting date and/or time from character string.
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__/__/____';
+
+-- normalize MM/DD/YYYY dates into ISO standardization
+SELECT 
+    account_created_date,
+    date_of_birth
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__/__/____'
+AND TRIM(date_of_birth) LIKE '__/__/____';
+
+-- dash format date pattern classification with error handling
+SELECT 
+    account_created_date,
+    CASE
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12
+            THEN TRY_CONVERT(DATE, account_created_date, 105) -- DD-MM-YYYY
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12
+            THEN TRY_CONVERT(DATE, account_created_date, 110) -- MM-DD-YYYY
+        ELSE NULL
+    END AS iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__-__-____';
+
+-- slash format date pattern classification with error handling
+SELECT 
+    account_created_date,
+    CASE
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 THEN TRY_CONVERT(DATE, account_created_date, 103) -- DD/MM/YYYY
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 THEN TRY_CONVERT(DATE, account_created_date, 101) -- MM/DD/YYYY
+        ELSE NULL
+    END AS iso_date
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__/__/____';
+
+
+SELECT 
+    account_created_date,
+    CASE
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 
+            THEN TRY_CONVERT(DATE, account_created_date, 103) -- DD/MM/YYYY
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 
+            THEN TRY_CONVERT(DATE, account_created_date, 101) -- MM/DD/YYYY
+        ELSE NULL
+    END AS iso_date,
+    CASE
+        WHEN CAST(LEFT(account_created_date,2) AS INT) > 12 
+            THEN 'DD/MM/YYYY'
+        WHEN CAST(SUBSTRING(account_created_date,4,2) AS INT) > 12 
+            THEN 'MM/DD/YYYY'
+        ELSE 'AMBIGUOUS_DATE'
+    END AS parsing_status
+FROM bronze.customers
+WHERE TRIM(account_created_date) LIKE '__/__/____';
+
+/*error example 
+MM/DD/YYYY or DD/MM/YYYY	187   
+Mon DD, YYYY	110               -->> done
+YYYY/MM/DD	104                   -->> done 
+Month DD, YYYY	84                -->> done 
+YYYY-MM-DD	79                    -->> done 
+DD-MM-YYYY	76 
+
+
+pattern             pattern_count
+------------------  -------------
+99/99/9999          187          
+aaa 99, 9999        110          
+9999/99/99          104          
+9999-99-99          79           
+99-99-9999          76           
+aaaa 99, 9999       84
+*/
+
+
+-- fineal query 
+SELECT 
     CASE
         WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'       THEN CONVERT(DATE,account_created_date)
         WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE,account_created_date)
+        WHEN TRIM(account_created_date) LIKE '____/__/__'                     THEN CONVERT(DATE,account_created_date)
+        WHEN TRIM(account_created_date) LIKE '____-__-__'                     THEN CONVERT(DATE,account_created_date)
     END as iso_date
 FROM bronze.customers
 WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'
-OR TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____'
+    OR TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____'
+    OR TRIM(account_created_date) LIKE '____/__/__'
+    OR TRIM(account_created_date) LIKE '____-__-__'
  ;
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
