@@ -426,16 +426,120 @@ SELECT DISTINCT
     TRIM(state_full) as state_full
 FROM bronze.customers ;
 
+-- column check where it countain state abber in state column 
+SELECT DISTINCT 
+    TRIM(UPPER(state)) as state_abber 
+FROM bronze.customers
+WHERE LEN(TRIM(state)) = 2 ;
+
+-- column check where it contain state_full column in state column 
+SELECT DISTINCT 
+    TRIM(state) as state_full
+FROM bronze.customers
+WHERE LEN(TRIM(state)) != 2 ;
+
+-- finding root cause of state column contain state_full value
+SELECT DISTINCT 
+    TRIM(state) as state_full,
+    state_full as state_full_r
+FROM bronze.customers
+WHERE LEN(TRIM(state))!=  2;
+
+-- finding root cause of state column contain state_abber value
+SELECT DISTINCT 
+    TRIM(state) as state_abber_w ,
+    state_abbr as state_abber_r
+FROM bronze.customers
+WHERE LEN(TRIM(state)) = 2;
+
+-- finding root cause of state column contain state_abber value but not match with state_abbr column
+SELECT DISTINCT 
+    TRIM(state) as state_abber_w ,
+    state_abbr as state_abber_r
+FROM bronze.customers
+WHERE LEN(TRIM(state)) = 2
+AND TRIM(UPPER(state)) != TRIM(UPPER(state_abbr)) ;
+
+-- finding root cause of state column contain state_full value but not match with state_full column
+SELECT DISTINCT 
+    TRIM(state) as state_full_w ,
+    state_full as state_full_r
+FROM bronze.customers
+WHERE LEN(TRIM(state)) != 2
+AND TRIM(UPPER(state)) != TRIM(UPPER(state_full)) ;
+
+--=============================================================================================
+--=================================== customers city cleaning =================================
+--=============================================================================================
+-- customer city data profiling
+SELECT 
+* 
+FROM bronze.customers
+WHERE city IS NULL ;
+
+-- unique city check
+SELECT DISTINCT 
+    TRIM(LOWER(city)) as city
+FROM bronze.customers ; 
+
+-- final query after semantic validation
+WITH city_clean AS 
+(
+    SELECT 
+        CASE 
+            WHEN TRIM(LOWER(city)) = ''             THEN 'Unknown'
+            WHEN TRIM(LOWER(city)) IS NULL          THEN 'Unknown'
+            WHEN TRIM(LOWER(city)) = 'an diego'     THEN 'san diego'
+            WHEN TRIM(LOWER(city)) = 'chiago'       THEN 'chicago'
+            WHEN TRIM(LOWER(city)) = 'chrlotte'     THEN 'charlotte'
+            WHEN TRIM(LOWER(city)) = 'dalla'        THEN 'dallas'
+            WHEN TRIM(LOWER(city)) = 'inneapolis'   THEN 'minneapolis'
+            WHEN TRIM(LOWER(city)) = 'louiville'    THEN 'louisville'
+            WHEN TRIM(LOWER(city)) = 'milwakee'     THEN 'milwaukee'
+            WHEN TRIM(LOWER(city)) = 'mnneapolis'   THEN 'minneapolis'
+            WHEN TRIM(LOWER(city)) = 'oklahoma cty' THEN 'oklahoma city'
+            WHEN TRIM(LOWER(city)) = 'ortland'      THEN 'portland'
+            WHEN TRIM(LOWER(city)) = 'sa diego'     THEN 'san diego'
+            WHEN TRIM(LOWER(city)) = 'san ntonio'   THEN 'san antonio'
+            WHEN TRIM(LOWER(city)) = 'sn antonio'   THEN 'san antonio'
+            ELSE TRIM(LOWER(city))
+        END as city
+    FROM bronze.customers 
+)
+SELECT DISTINCT 
+    city,
+    COUNT(*) as city_count
+FROM city_clean 
+GROUP BY city
+HAVING COUNT(*) >= 1
+ORDER BY city_count DESC ;
+
+--=============================================================================================
+--================================ customers address cleaning =================================
+--=============================================================================================
+-- data pattern check 
+SELECT 
+    address
+FROM bronze.customers
+
+-- final query after pattern validation
+SELECT
+    CASE 
+        WHEN [address] IS NULL OR [address] = '' THEN 'Unknown'
+        ELSE [address]
+    END as address 
+FROM bronze.customers
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
 SELECT TOP (1000) [customer_id]
-      ,TRIM(title) as title
-      ,TRIM(first_name) as first_name
-      ,TRIM(last_name) as last_name
-      ,TRIM(full_name) as full_name
+        ,TRIM(title) as title
+        ,TRIM(first_name) as first_name
+        ,TRIM(last_name) as last_name
+        ,TRIM(full_name) as full_name
 
-      ,CASE TRIM(LOWER(gender))
+        ,CASE TRIM(LOWER(gender))
             WHEN 'f' THEN 'Female'
             WHEN 'female' THEN 'Female'
             WHEN 'm' THEN 'Male'
@@ -447,48 +551,77 @@ SELECT TOP (1000) [customer_id]
             ELSE 'Unknown'
         END as gender
         
-      ,[date_of_birth]
-      ,[age]
-      ,[email]
-      ,[phone]
-      ,[address]
-      ,[city]
+        ,[date_of_birth]
 
-      ,[state_abbr]
+        ,[age]
+
+        ,[email]
+
+        ,[phone]
+
+        ,CASE 
+            WHEN [address] IS NULL OR [address] = '' THEN 'Unknown'
+            ELSE [address]
+        END as address
+
+        ,CASE 
+            WHEN TRIM(LOWER(city)) = ''             THEN 'Unknown'
+            WHEN TRIM(LOWER(city)) IS NULL          THEN 'Unknown'
+            WHEN TRIM(LOWER(city)) = 'an diego'     THEN 'san diego'
+            WHEN TRIM(LOWER(city)) = 'chiago'       THEN 'chicago'
+            WHEN TRIM(LOWER(city)) = 'chrlotte'     THEN 'charlotte'
+            WHEN TRIM(LOWER(city)) = 'dalla'        THEN 'dallas'
+            WHEN TRIM(LOWER(city)) = 'inneapolis'   THEN 'minneapolis'
+            WHEN TRIM(LOWER(city)) = 'louiville'    THEN 'louisville'
+            WHEN TRIM(LOWER(city)) = 'milwakee'     THEN 'milwaukee'
+            WHEN TRIM(LOWER(city)) = 'mnneapolis'   THEN 'minneapolis'
+            WHEN TRIM(LOWER(city)) = 'oklahoma cty' THEN 'oklahoma city'
+            WHEN TRIM(LOWER(city)) = 'ortland'      THEN 'portland'
+            WHEN TRIM(LOWER(city)) = 'sa diego'     THEN 'san diego'
+            WHEN TRIM(LOWER(city)) = 'san ntonio'   THEN 'san antonio'
+            WHEN TRIM(LOWER(city)) = 'sn antonio'   THEN 'san antonio'
+            ELSE TRIM(LOWER(city))
+        END as city
+
+        ,CASE 
+            WHEN TRIM(UPPER(state_abbr)) IS NULL OR TRIM(UPPER(state_abbr)) = '' THEN 'Unknown'
+            WHEN LEN(TRIM(UPPER(state_abbr))) != 2 THEN 'Unknown'
+            ELSE TRIM(UPPER(state_abbr))
+        END as state_abbr
       
-      ,CASE 
+        ,CASE 
             WHEN TRIM(state_full) IS NULL OR TRIM(state_full) = '' THEN 'Unknown'
             ELSE TRIM(state_full)
-       END as state
+        END as state
 
-      ,CASE 
+        ,CASE 
             WHEN zip_code IS NULL THEN 0
             WHEN LEN(zip_code) != 5 THEN 0
             WHEN TRY_CAST(zip_code AS INT) IS NULL THEN 0
             ELSE zip_code
         END as zip_code
 
-      ,CASE TRIM(LOWER(country))
+        ,CASE TRIM(LOWER(country))
             WHEN 'u.s.a'         THEN 'United States'
             WHEN 'us'            THEN 'United States'
             WHEN 'usa'           THEN 'United States'
             WHEN 'united states' THEN 'United States'
             ELSE 'Unknown'
-       END as country
+        END as country
 
-      ,CASE 
+        ,CASE 
             WHEN region IS NULL OR TRIM(region) = '' THEN 'Unknown'
             ELSE TRIM(region)
        END as region
 
-      ,CASE 
+        ,CASE 
             WHEN customer_segment IS NULL OR customer_segment = '' THEN 'Unknown'
             ELSE customer_segment
-       END as customer_segment
+        END as customer_segment
 
-      ,[loyalty_points]
+        ,[loyalty_points]
 
-      ,CASE TRIM(LOWER(is_active))
+        ,CASE TRIM(LOWER(is_active))
             WHEN '0'        THEN 'False'
             WHEN '1'        THEN 'True'
             WHEN 'active'   THEN 'True'
@@ -502,9 +635,9 @@ SELECT TOP (1000) [customer_id]
             ELSE 'Unknown'
         END AS is_active
 
-      ,[account_created_date]
+        ,[account_created_date]
 
-      ,CASE TRIM(LOWER(preferred_channel))
+        ,CASE TRIM(LOWER(preferred_channel))
             WHEN 'app'        THEN 'Mobile App'
             WHEN 'mobile app' THEN 'Mobile App'
             WHEN 'mobile'     THEN 'Mobile App'
@@ -518,14 +651,14 @@ SELECT TOP (1000) [customer_id]
             ELSE 'Unknown'
         END as preferred_channel
         
-      ,COALESCE(
+        ,COALESCE(
             annual_income_usd,
             PERCENTILE_CONT(0.5)
             WITHIN GROUP (ORDER BY annual_income_usd)
             OVER (PARTITION BY customer_segment)
-      ) as annual_income_usd
+        ) as annual_income_usd
 
-      ,CASE 
+        ,CASE 
             WHEN company IS NULL OR company = '' THEN 'Unknown'
             WHEN TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), '')) = '' THEN 'Unknown'
             ELSE TRIM(REPLACE(REPLACE(company, CHAR(13), ''), CHAR(10), ''))
