@@ -764,6 +764,82 @@ WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'
     OR CAST(SUBSTRING(account_created_date,4,2)AS INT) > 12
  ;
 
+--=============================================================================================
+--=============================== customers phone number cleaning =============================
+--=============================================================================================
+-- account_created_date raw data inspection
+SELECT 
+    phone
+FROM bronze.customers ;
+
+-- unique check 
+SELECT DISTINCT 
+    phone
+FROM bronze.customers ;
+
+-- null check 
+SELECT 
+    COUNT(*) phone_null_count
+FROM bronze.customers 
+WHERE phone IS NULL;
+
+-- account_created_date structural pattern profiling
+WITH phone_pattern AS 
+(
+    SELECT 
+        TRANSLATE
+        (
+            TRIM(phone),
+            '0123456789',
+            '9999999999'
+        ) as Patterns 
+    FROM bronze.customers
+)
+SELECT 
+    Patterns,
+    LEN(Patterns) as pattern_length,
+    COUNT(*) as pattern_count,
+    CAST(ROUND(COUNT(*) * 100/SUM(COUNT(*)) OVER(),2)AS NVARCHAR) + '%' as percentage
+FROM phone_pattern
+    GROUP BY Patterns
+    ORDER BY pattern_count DESC ;
+
+-- identify +1 standardized US phone numbers
+SELECT 
+    phone
+FROM bronze.customers
+WHERE phone LIKE '+1__________' ;
+
+-- format canonical US phone numbers into readable display format
+SELECT 
+CONCAT
+    (
+        '+1 (', SUBSTRING(phone,3, 3), ') ',
+        SUBSTRING(phone, 6, 3), '-',
+        SUBSTRING(phone, 9, 4)
+    )
+FROM bronze.customers
+WHERE phone LIKE '+1__________';
+
+-----------------------------------------------
+SELECT 
+    phone 
+FROM bronze.customers
+WHERE phone LIKE '__________' ;
+
+SELECT 
+CONCAT('+1 (', SUBSTRING(phone, 1 ,3), ') ', SUBSTRING(phone, 4 ,3), '-', SUBSTRING(phone, 7, 4))
+FROM bronze.customers
+WHERE phone LIKE '__________' ;
+-----------------------------------------------
+-- final phone column in  usa phone standardization format
+SELECT
+    CASE 
+        WHEN phone LIKE '+1__________' THEN CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ', SUBSTRING(phone, 6, 3),'-',SUBSTRING(phone,9,4))
+    END  as usa_phone_pattern
+FROM bronze.customers
+WHERE phone LIKE '+1__________';
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
