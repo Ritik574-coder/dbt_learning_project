@@ -699,6 +699,49 @@ FROM format_catch
     GROUP BY detected_format
     ORDER BY total_records DESC ;
 
+-- dash-format date parsing and ISO conversion analysis
+WITH dash_format_catch AS 
+(
+    SELECT 
+        CASE 
+            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12
+            THEN TRY_CONVERT(DATE, account_created_date, 105)
+
+            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date,4,2)) > 12
+            THEN TRY_CONVERT(DATE, account_created_date, 110)
+        END AS iso_date
+    FROM bronze.customers
+)
+SELECT 
+    iso_date,
+    COUNT(*) as total_records,
+    ROUND(COUNT(*) * 100/SUM(COUNT(*)) OVER(), 2) as percentage
+FROM dash_format_catch
+WHERE iso_date IS NOT NULL
+    GROUP BY iso_date
+    ORDER BY total_records DESC ;
+
+-- slash-format date parsing and ISO conversion analysis
+WITH slash_format_catch AS 
+(
+    SELECT
+        CASE 
+            WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12
+            THEN TRY_CONVERT(DATE, account_created_date, 103)
+            WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date, 4, 2)) > 12
+            THEN TRY_CONVERT(DATE, account_created_date, 101)
+        END iso_date
+    FROM bronze.customers
+)
+SELECT 
+    iso_date,
+    COUNT(*) as total_records,
+    ROUND(COUNT(*) * 100/SUM(COUNT(*)) OVER(),2) as percentage 
+FROM slash_format_catch
+WHERE iso_date IS NOT NULL 
+    GROUP BY iso_date 
+    ORDER BY total_records DESC ;
+
 -- final account_created_date ISO standardization pipeline
 SELECT 
     CASE
@@ -706,10 +749,12 @@ SELECT
         WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE,account_created_date)
         WHEN TRIM(account_created_date) LIKE '____/__/__'                     THEN CONVERT(DATE,account_created_date)
         WHEN TRIM(account_created_date) LIKE '____-__-__'                     THEN CONVERT(DATE,account_created_date)
-        WHEN CAST(LEFT(account_created_date,2)AS INT) > 12                    THEN TRY_CONVERT(DATE, account_created_date,103)
-        WHEN CAST(SUBSTRING(account_created_date,4,2)AS INT) > 12             THEN TRY_CONVERT(DATE, account_created_date,101)
-        ELSE TRY_CONVERT(DATE, account_created_date,101)
-    END as account_created_date
+        WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 105)
+        WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date,4,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 110)
+        WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 103)
+        WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 101)
+        ELSE TRY_CONVERT(DATE, account_created_date,101) -->> Ambiguous dates were standardized using MM/DD/YYYY fallback logic based on overall dataset directional pattern analysis, where month-first formatting represented the dominant ecosystem across the dataset.
+    END as account_created_date 
 FROM bronze.customers
 WHERE TRIM(account_created_date) LIKE '[A-Z][a-z][a-z] __, ____'
     OR TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____'
@@ -829,10 +874,12 @@ SELECT TOP (1000) [customer_id]
             WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE,account_created_date)
             WHEN TRIM(account_created_date) LIKE '____/__/__'                     THEN CONVERT(DATE,account_created_date)
             WHEN TRIM(account_created_date) LIKE '____-__-__'                     THEN CONVERT(DATE,account_created_date)
-            WHEN CAST(LEFT(account_created_date,2)AS INT) > 12                    THEN TRY_CONVERT(DATE, account_created_date,103)
-            WHEN CAST(SUBSTRING(account_created_date,4,2)AS INT) > 12             THEN TRY_CONVERT(DATE, account_created_date,101)
+            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 105)
+            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date,4,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 110)
+            WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 103)
+            WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 101)
             ELSE TRY_CONVERT(DATE, account_created_date,101)
-        END as account_created_date
+        END as account_created_date 
 
         ,CASE TRIM(LOWER(preferred_channel))
             WHEN 'app'        THEN 'Mobile App'
