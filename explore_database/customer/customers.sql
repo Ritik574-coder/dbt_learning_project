@@ -931,6 +931,83 @@ OR    TRIM(phone) LIKE '(___) ___-____'
 OR    TRIM(phone) = ''
 OR    TRIM(phone) IS NULL;
 
+--=============================================================================================
+--=============================== customers phone number cleaning =============================
+--=============================================================================================
+-- customer email column data profiling
+SELECT 
+    email 
+FROM bronze.customers ;
+
+-- null check in email column 
+SELECT 
+    email 
+FROM bronze.customers 
+WHERE email IS NOT NULL 
+OR email != '';
+
+-- null count in email column 
+SELECT 
+    COUNT(*) null_count
+FROM bronze.customers 
+WHERE email IS NULL 
+OR email = '';
+
+-- email domain check 
+SELECT 
+email
+FROM bronze.customers
+WHERE PATINDEX('%@%@%', email) > 0
+
+-- check email domain that contain email column  
+SELECT DISTINCT 
+SUBSTRING(email, CHARINDEX('@', email)+1, LEN(email)) as domain 
+FROM bronze.customers
+
+-- check email where  @ are messing 
+SELECT 
+    email
+FROM bronze.customers
+WHERE email NOT LIKE '%@%' ;
+
+-- check email where username are messing 
+SELECT 
+    email
+FROM bronze.customers
+WHERE email LIKE '@%' ;
+
+--check email where domain are messing 
+SELECT 
+    email
+FROM bronze.customers
+WHERE email LIKE '%@' ;
+
+-- check email where dot are messing 
+SELECT 
+    email
+FROM bronze.customers
+WHERE email NOT LIKE '%.__%' 
+
+-- fineal clean email query 
+SELECT 
+    CASE 
+        WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN NULL 
+    END as email 
+FROM bronze.customers
+
+
+SELECT
+    email,
+
+    CASE
+        WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0
+        THEN LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email)))) + REPLACE(SUBSTRING(TRIM(LOWER(email)),
+        CHARINDEX('@', TRIM(LOWER(email))) + 1,LEN(email)),'@','')
+    END AS cleaned_email
+FROM bronze.customers
+WHERE PATINDEX('%@%@%', email) > 0;
+
+
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
 --#############################################################################################
