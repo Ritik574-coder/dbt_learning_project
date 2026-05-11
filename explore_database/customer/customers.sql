@@ -1140,6 +1140,66 @@ SELECT
     *
 FROM birth_date
 
+--=============================================================================================
+--=============================== customers date_of_birth cleaning ============================
+--=============================================================================================
+-- custome name_title data profiling 
+SELECT 
+    title
+FROM bronze.customers
+
+-- profiling where title not equal to trim title 
+SELECT 
+    title 
+FROM bronze.customers
+WHERE title != TRIM(title)
+
+-- title value chek in number and percentage 
+SELECT 
+    title ,
+    COUNT(*) as title_count,
+    CAST(ROUND(COUNT(*) * 100 / SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentage 
+FROM bronze.customers 
+    GROUP BY title 
+    ORDER BY title_count DESC 
+
+--=============================================================================================
+--=============================== customers date_of_birth cleaning ============================
+--=============================================================================================
+SELECT 
+    first_name
+FROM bronze.customers
+
+--=============================================================================================
+--=============================== customers date_of_birth cleaning ============================
+--=============================================================================================
+SELECT 
+    last_name
+FROM bronze.customers
+
+
+SELECT 
+    full_name,
+    TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name)))  as full_name 
+FROM bronze.customers 
+WHERE ISNULL(TRIM(full_name), '') != ISNULL(TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name))), '')
+
+
+SELECT
+    full_name,
+    title,
+    CASE
+        WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 2 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
+        WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
+    END AS first_name,
+   PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name
+FROM bronze.customers
+--=============================================================================================
+--=============================== customers full_name cleaning ================================
+--=============================================================================================
+SELECT 
+    full_name
+FROM bronze.customers ;
 
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
@@ -1176,7 +1236,7 @@ SELECT TOP (1000) [customer_id]
             ELSE TRY_CONVERT(DATE, TRIM(date_of_birth), 101)
         END date_of_birth
 
-        ,[email]
+        ,TRIM(LOWER([email])) as email
 
         ,CASE 
             WHEN TRIM(phone) LIKE '+1__________'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 3, 3), ') ', SUBSTRING(TRIM(phone), 6, 3),'-',   SUBSTRING(TRIM(phone),9,4))
@@ -1194,8 +1254,6 @@ SELECT TOP (1000) [customer_id]
         END as address
 
         ,CASE 
-            WHEN TRIM(LOWER(city)) = ''             THEN 'Unknown'
-            WHEN TRIM(LOWER(city)) IS NULL          THEN 'Unknown'
             WHEN TRIM(LOWER(city)) = 'an diego'     THEN 'san diego'
             WHEN TRIM(LOWER(city)) = 'chiago'       THEN 'chicago'
             WHEN TRIM(LOWER(city)) = 'chrlotte'     THEN 'charlotte'
@@ -1209,6 +1267,8 @@ SELECT TOP (1000) [customer_id]
             WHEN TRIM(LOWER(city)) = 'sa diego'     THEN 'san diego'
             WHEN TRIM(LOWER(city)) = 'san ntonio'   THEN 'san antonio'
             WHEN TRIM(LOWER(city)) = 'sn antonio'   THEN 'san antonio'
+            WHEN TRIM(LOWER(city)) = ''             THEN 'Unknown'
+            WHEN TRIM(LOWER(city)) IS NULL          THEN 'Unknown'
             ELSE TRIM(LOWER(city))
         END as city
 
