@@ -1138,7 +1138,7 @@ WITH birth_date AS
 )
 SELECT 
     *
-FROM birth_date
+FROM birth_date ;
 
 --=============================================================================================
 --=============================== customers date_of_birth cleaning ============================
@@ -1146,13 +1146,13 @@ FROM birth_date
 -- custome name_title data profiling 
 SELECT 
     title
-FROM bronze.customers
+FROM bronze.customers ;
 
 -- profiling where title not equal to trim title 
 SELECT 
     title 
 FROM bronze.customers
-WHERE title != TRIM(title)
+WHERE title != TRIM(title) ;
 
 -- title value chek in number and percentage 
 SELECT 
@@ -1161,28 +1161,21 @@ SELECT
     CAST(ROUND(COUNT(*) * 100 / SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentage 
 FROM bronze.customers 
     GROUP BY title 
-    ORDER BY title_count DESC 
-
---=============================================================================================
---=============================== customers date_of_birth cleaning ============================
---=============================================================================================
-SELECT 
-    first_name
-FROM bronze.customers
+    ORDER BY title_count DESC  ;
 
 --=============================================================================================
 --=============================== customers date_of_birth cleaning ============================
 --=============================================================================================
 SELECT 
     last_name
-FROM bronze.customers
+FROM bronze.customers ;
 
 
 SELECT 
     full_name,
     TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name)))  as full_name 
 FROM bronze.customers 
-WHERE ISNULL(TRIM(full_name), '') != ISNULL(TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name))), '')
+WHERE ISNULL(TRIM(full_name), '') != ISNULL(TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name))), '') ;
 
 
 SELECT
@@ -1193,12 +1186,6 @@ SELECT
         WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
     END AS first_name,
    PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name
-FROM bronze.customers
---=============================================================================================
---=============================== customers full_name cleaning ================================
---=============================================================================================
-SELECT 
-    full_name
 FROM bronze.customers ;
 
 --#############################################################################################
@@ -1206,9 +1193,11 @@ FROM bronze.customers ;
 --#############################################################################################
 SELECT TOP (1000) [customer_id]
         ,TRIM(title) as title
-        ,TRIM(first_name) as first_name
-        ,TRIM(last_name) as last_name
-        ,TRIM(full_name) as full_name
+        ,CASE
+            WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 2 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
+            WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
+        END AS first_name,
+        PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name
 
         ,CASE TRIM(LOWER(gender))
             WHEN 'f' THEN 'Female'
