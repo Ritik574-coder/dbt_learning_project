@@ -989,16 +989,8 @@ FROM bronze.customers
 WHERE email NOT LIKE '%.__%' 
 
 -- fineal clean email query 
-SELECT 
-    CASE 
-        WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN NULL 
-    END as email 
-FROM bronze.customers
-
-
 SELECT
     email,
-
     CASE
         WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0
         THEN LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email)))) + REPLACE(SUBSTRING(TRIM(LOWER(email)),
@@ -1007,6 +999,147 @@ SELECT
 FROM bronze.customers
 WHERE PATINDEX('%@%@%', email) > 0;
 
+--=============================================================================================
+--=============================== customers date_of_birth cleaning ============================
+--=============================================================================================
+-- date of birth column data profiling 
+SELECT 
+    date_of_birth 
+FROM bronze.customers ;
+
+-- date_of_birth pattern check 
+WITH date_of_birth AS 
+(
+    SELECT 
+        TRANSLATE(
+            TRIM(LOWER(date_of_birth)),
+        '0123456789abcdefghijklmnopqrstuvwzyz' ,
+        '9999999999aaaaaaaaaaaaaaaaaaaaaaaaaa'
+        ) as birth_date_pattern
+    FROM bronze.customers
+)
+SELECT
+    birth_date_pattern,
+    COUNT(*) AS total_count,
+    CAST(ROUND(COUNT(*) * 100/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentage
+FROM date_of_birth 
+GROUP BY birth_date_pattern
+ORDER BY total_count DESC ;
+
+-- Detect DOB Records in DD/MM/YYYY Format
+SELECT 
+    TRIM(date_of_birth) as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE  '__/__/____' ;
+
+-- Identify DD/MM/YYYY Records Where Day Value > 12
+SELECT 
+    TRIM(date_of_birth) as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12 ;
+
+-- Convert DD/MM/YYYY Records to DATE Format Using Style 103
+SELECT 
+    CASE 
+        WHEN TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12 THEN TRY_CONVERT(DATE , date_of_birth, 103)
+    END  as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12;
+
+-- Identify MM/DD/YYYY Records Where Month Value > 12
+SELECT 
+    TRIM(date_of_birth) as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12;
+
+-- Convert MM/DD/YYYY Records to DATE Format Using Style 101
+SELECT 
+    CASE
+        WHEN TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12 THEN TRY_CONVERT(DATE, date_of_birth, 101)
+    END as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12 ;
+
+-- Detect DOB Records in YYYY/MM/DD Format
+SELECT 
+    TRIM(date_of_birth) as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '____/__/__' ;
+
+-- Convert YYYY/MM/DD Records to DATE Format
+SELECT 
+    CASE 
+        WHEN TRIM(date_of_birth) LIKE '____/__/__' THEN CONVERT(DATE, date_of_birth)
+    END  as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '____/__/__' ;
+
+-- Detect DOB Records in YYYY-MM-DD Format
+SELECT 
+    TRIM(date_of_birth) as bdate_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '____-__-__' ;
+
+-- Convert YYYY-MM-DD Records to DATE Format
+SELECT 
+    CASE 
+        WHEN TRIM(date_of_birth) LIKE '____-__-__' THEN CONVERT(DATE, date_of_birth)
+    END  as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '____-__-__' ;
+
+-- Detect DOB Records with Short Month Name Format (Mon DD, YYYY)
+SELECT 
+    TRIM(date_of_birth) as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z] __, ____' ;
+
+-- Convert Short Month Name Format (Mon DD, YYYY) to DATE
+SELECT 
+    CASE 
+        WHEN TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z] __, ____' THEN CONVERT(DATE, date_of_birth)
+    END  as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z] __, ____' ;
+
+-- Detect DOB Records with Full Month Name Format (Month DD, YYYY)
+SELECT 
+    TRIM(date_of_birth) as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' ;
+
+-- Convert Full Month Name Format (Month DD, YYYY) to DATE
+SELECT 
+    CASE 
+        WHEN TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE, date_of_birth)
+    END  as date_of_birth
+FROM bronze.customers
+WHERE TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' ;
+
+
+-- fineal query 
+WITH birth_date AS 
+(
+    SELECT 
+        CASE
+            WHEN TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE, date_of_birth)
+            WHEN TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z] __, ____'       THEN CONVERT(DATE, date_of_birth)
+            WHEN TRIM(date_of_birth) LIKE '____-__-__'                     THEN CONVERT(DATE, date_of_birth)
+            WHEN TRIM(date_of_birth) LIKE '____/__/__'                     THEN CONVERT(DATE, date_of_birth)
+
+            WHEN TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12 THEN TRY_CONVERT(DATE, date_of_birth, 101)
+            WHEN TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12         THEN TRY_CONVERT(DATE , date_of_birth, 103)
+
+            WHEN TRIM(date_of_birth) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12 THEN TRY_CONVERT(DATE, date_of_birth, 110)
+            WHEN TRIM(date_of_birth) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12         THEN TRY_CONVERT(DATE , date_of_birth, 105)
+            ELSE TRY_CONVERT(DATE, date_of_birth, 101)
+        END date_of_birth
+    FROM bronze.customers
+)
+SELECT 
+    *
+FROM birth_date
+WHERE date_of_birth IS NULL 
 
 --#############################################################################################
 --############################## CUSTOEMR CLEAN DATA ##########################################
@@ -1029,18 +1162,28 @@ SELECT TOP (1000) [customer_id]
             ELSE 'Unknown'
         END as gender
         
-        ,[date_of_birth]
+        ,CASE
+            WHEN TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE, date_of_birth)
+            WHEN TRIM(date_of_birth) LIKE '[A-Z][a-z][a-z] __, ____'       THEN CONVERT(DATE, date_of_birth)
+            WHEN TRIM(date_of_birth) LIKE '____-__-__'                     THEN CONVERT(DATE, date_of_birth)
+            WHEN TRIM(date_of_birth) LIKE '____/__/__'                     THEN CONVERT(DATE, date_of_birth)
 
-        ,[age]
+            WHEN TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12 THEN TRY_CONVERT(DATE, date_of_birth, 101)
+            WHEN TRIM(date_of_birth) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12         THEN TRY_CONVERT(DATE , date_of_birth, 103)
+
+            WHEN TRIM(date_of_birth) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(date_of_birth, 4, 2)) > 12 THEN TRY_CONVERT(DATE, date_of_birth, 110)
+            WHEN TRIM(date_of_birth) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(date_of_birth, 2)) > 12         THEN TRY_CONVERT(DATE , date_of_birth, 105)
+            ELSE TRY_CONVERT(DATE, date_of_birth, 101)
+        END date_of_birth
 
         ,[email]
 
         ,CASE 
-            WHEN TRIM(phone) LIKE '+1__________'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 3, 3), ') ', SUBSTRING(TRIM(phone), 6, 3),'-',SUBSTRING(TRIM(phone),9,4))
-            WHEN TRIM(phone) LIKE '__________'     THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 1 ,3), ') ', SUBSTRING(TRIM(phone), 4 ,3), '-', SUBSTRING(TRIM(phone), 7, 4))
-            WHEN TRIM(phone) LIKE '___-___-____'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 1, 3), ') ', SUBSTRING(TRIM(phone), 5, 3),SUBSTRING(TRIM(phone), 8 ,5))
-            WHEN TRIM(phone) LIKE '___.___.____'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 1, 3), ') ', SUBSTRING(TRIM(phone), 5, 3), '-', SUBSTRING(TRIM(phone),9, 4))
-            WHEN TRIM(phone) LIKE '(___) ___-____' THEN CONCAT('+1 ', SUBSTRING(TRIM(phone), 1, 14))
+            WHEN TRIM(phone) LIKE '+1__________'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 3, 3), ') ', SUBSTRING(TRIM(phone), 6, 3),'-',   SUBSTRING(TRIM(phone),9,4))
+            WHEN TRIM(phone) LIKE '__________'     THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 1 ,3), ') ', SUBSTRING(TRIM(phone), 4 ,3), '-',  SUBSTRING(TRIM(phone), 7, 4))
+            WHEN TRIM(phone) LIKE '___-___-____'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 1, 3), ') ', SUBSTRING(TRIM(phone), 5, 3),       SUBSTRING(TRIM(phone), 8 ,5))
+            WHEN TRIM(phone) LIKE '___.___.____'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 1, 3), ') ', SUBSTRING(TRIM(phone), 5, 3), '-',  SUBSTRING(TRIM(phone),9, 4))
+            WHEN TRIM(phone) LIKE '(___) ___-____' THEN CONCAT('+1 ',  SUBSTRING(TRIM(phone), 1, 14))
             WHEN TRIM(phone) IS NULL OR TRIM(phone) = '' THEN 'Unknown'
             ELSE 'Unknown'
         END  as usa_phone_pattern
@@ -1126,9 +1269,10 @@ SELECT TOP (1000) [customer_id]
             WHEN TRIM(account_created_date) LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN CONVERT(DATE,account_created_date)
             WHEN TRIM(account_created_date) LIKE '____/__/__'                     THEN CONVERT(DATE,account_created_date)
             WHEN TRIM(account_created_date) LIKE '____-__-__'                     THEN CONVERT(DATE,account_created_date)
-            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 105)
-            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date,4,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 110)
-            WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 103)
+
+            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12          THEN TRY_CONVERT(DATE, account_created_date, 105)
+            WHEN TRIM(account_created_date) LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date,4,2)) > 12   THEN TRY_CONVERT(DATE, account_created_date, 110)
+            WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(account_created_date,2)) > 12          THEN TRY_CONVERT(DATE, account_created_date, 103)
             WHEN TRIM(account_created_date) LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(account_created_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, account_created_date, 101)
             ELSE TRY_CONVERT(DATE, account_created_date,101)
         END as account_created_date 
