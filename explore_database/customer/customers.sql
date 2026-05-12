@@ -988,7 +988,7 @@ SELECT
 FROM bronze.customers
 WHERE email NOT LIKE '%.__%' 
 
--- fineal clean email query 
+-- at symbol repetition check in email column
 SELECT
     email,
     CASE
@@ -998,6 +998,27 @@ SELECT
     END AS cleaned_email
 FROM bronze.customers
 WHERE PATINDEX('%@%@%', email) > 0;
+
+-- final email cleaning query after pattern validation
+WITH customer_email AS 
+(
+    SELECT
+        email,
+        CASE
+            WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0
+            THEN LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email)))) --+ REPLACE(SUBSTRING(TRIM(LOWER(email)), 
+            --CHARINDEX('@', TRIM(LOWER(email))) + 1,LEN(email)),'@','')
+        END AS cleaned_email
+    FROM bronze.customers
+)
+SELECT 
+    *
+FROM customer_email
+WHERE PATINDEX('%@%@%', email) > 0 ;
+
+SELECT 
+email 
+FROM bronze.customers
 
 --=============================================================================================
 --=============================== customers date_of_birth cleaning ============================

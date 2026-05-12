@@ -1,0 +1,233 @@
+You are a senior Data Engineering Technical Writer, Software Architect, and Open Source Documentation Expert.
+
+Your task is to deeply analyze my complete project repository and generate a world-class professional README.md file for GitHub.
+
+IMPORTANT:
+Do NOT generate a generic README.
+Do NOT assume this is a beginner project.
+Do NOT write shallow marketing content.
+
+You must first analyze:
+- all SQL files
+- folder structure
+- ETL logic
+- transformation pipelines
+- data-cleaning workflows
+- documentation comments
+- naming conventions
+- profiling logic
+- data-quality handling
+- business rules
+- normalization logic
+- validation strategies
+- error handling
+- standardization pipelines
+- project architecture
+- pipeline flow
+- database objects
+- schemas
+- queries
+- reusable patterns
+- engineering decisions
+
+Then create a deeply detailed, highly professional, production-style README.md file.
+
+The README should feel like:
+- a serious real-world data engineering project
+- enterprise-grade documentation
+- portfolio-quality showcase
+- recruiter/impressive open-source documentation
+- technically mature engineering work
+
+The README must be extremely well-structured and visually professional.
+
+---------------------------------------------------
+README REQUIREMENTS
+---------------------------------------------------
+
+Generate the README with these sections:
+
+# 1. Professional Project Title
+Create a strong professional project title based on actual repository analysis.
+
+# 2. Project Overview
+Explain:
+- what the project does
+- why it exists
+- what engineering problems it solves
+- what type of data engineering workflows are implemented
+
+# 3. Project Goals
+Explain:
+- standardization goals
+- ETL goals
+- data quality goals
+- analytics-readiness goals
+- normalization goals
+
+# 4. Architecture Overview
+Analyze repository structure and explain:
+- bronze/silver/gold architecture if present
+- ETL flow
+- transformation stages
+- processing layers
+- normalization pipelines
+
+Include:
+- pipeline explanation
+- transformation lifecycle
+- data flow explanation
+
+# 5. Tech Stack
+Automatically detect and document:
+- SQL dialect
+- databases
+- tools
+- orchestration tools
+- CLI tools
+- scripting languages
+- frameworks
+- utilities
+
+Present them professionally.
+
+# 6. Repository Structure
+Generate a clean tree structure and explain every major folder.
+
+# 7. Data Profiling and Quality Engineering
+This section is VERY IMPORTANT.
+
+Analyze and explain:
+- profiling strategies
+- pattern detection logic
+- structural analysis
+- statistical analysis
+- anomaly detection
+- ambiguity handling
+- defensive parsing
+- validation frameworks
+- normalization logic
+
+Explain actual engineering reasoning behind the implementation.
+
+# 8. Data Cleaning Workflows
+Explain all major workflows found in the project.
+
+Examples:
+- phone number normalization
+- date standardization
+- email cleaning
+- null handling
+- duplicate handling
+- malformed value handling
+- state normalization
+- city correction
+- inconsistent formatting handling
+
+Explain:
+- issue
+- root cause
+- detection logic
+- transformation logic
+- final output format
+
+# 9. SQL Engineering Practices
+Analyze and explain:
+- CASE usage
+- TRY_CONVERT usage
+- defensive ETL logic
+- reusable transformation patterns
+- CTE usage
+- modular query structure
+- naming conventions
+- formatting standards
+
+# 10. Advanced Engineering Decisions
+VERY IMPORTANT.
+
+Document:
+- why certain parsing logic was chosen
+- why ambiguity was preserved
+- why fallback logic was used
+- why TRY_CONVERT was used instead of CAST
+- why normalization standards were selected
+- why invalid records were isolated
+
+This section should demonstrate deep engineering thinking.
+
+# 11. Key Features
+Create a professional feature list.
+
+# 12. Example Transformations
+Create before/after transformation examples using actual repository logic.
+
+# 13. Error Handling and Defensive Design
+Explain:
+- malformed data handling
+- null safety
+- ambiguity preservation
+- validation logic
+- defensive parsing
+
+# 14. Scalability and Real-World Relevance
+Explain how the project reflects real-world data engineering workflows.
+
+# 15. Learning Outcomes
+Explain:
+- SQL engineering concepts used
+- ETL concepts
+- data-quality engineering concepts
+- normalization concepts
+- profiling concepts
+
+# 16. Future Improvements
+Suggest realistic advanced improvements:
+- metadata-driven transformations
+- reusable parsing utilities
+- orchestration
+- dbt integration
+- automated quality checks
+- observability
+- schema enforcement
+
+# 17. Installation and Usage
+If relevant, automatically generate setup instructions.
+
+# 18. Example Queries
+Include professionally formatted example SQL snippets from the project.
+
+# 19. Documentation Style Requirements
+
+The README must:
+- look visually clean
+- use professional markdown formatting
+- use proper headings
+- use tables
+- use code blocks
+- use emojis minimally and professionally
+- use badges if appropriate
+- avoid cringe developer language
+- avoid beginner-style explanations
+- avoid fake corporate buzzwords
+
+The tone should feel:
+- senior
+- technically mature
+- engineering-focused
+- professional
+- portfolio-quality
+
+# 20. CRITICAL REQUIREMENTS
+
+- Deeply analyze the repository before writing.
+- Infer architecture from actual code.
+- Use actual project logic in explanations.
+- Do not hallucinate technologies not present.
+- Do not generate generic README sections.
+- Explain engineering reasoning behind transformations.
+- Focus heavily on data quality engineering and normalization workflows.
+- The README should feel like a real enterprise data engineering project.
+- The final README should be long, detailed, technically strong, and visually impressive.
+
+Finally:
+Generate the complete README.md in fully formatted markdown.
