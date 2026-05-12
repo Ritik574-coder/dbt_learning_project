@@ -1141,7 +1141,7 @@ SELECT
 FROM birth_date ;
 
 --=============================================================================================
---=============================== customers date_of_birth cleaning ============================
+--=============================== customers title cleaning ====================================
 --=============================================================================================
 -- custome name_title data profiling 
 SELECT 
@@ -1164,20 +1164,22 @@ FROM bronze.customers
     ORDER BY title_count DESC  ;
 
 --=============================================================================================
---=============================== customers date_of_birth cleaning ============================
+--=================== customers full_name cleaning and validition  ============================
 --=============================================================================================
+-- data profiling 
 SELECT 
     last_name
 FROM bronze.customers ;
 
-
+-- Full Name Mismatch Detection
 SELECT 
-    full_name,
-    TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name)))  as full_name 
+    TRIM(LOWER(email)) as email ,
+    TRIM(LOWER(full_name)) as full_name,
+    TRIM(CONCAT(LOWER(title),' ',TRIM(LOWER(first_name)),' ', TRIM(LOWER(last_name))))  as full_name_ed 
 FROM bronze.customers 
-WHERE ISNULL(TRIM(full_name), '') != ISNULL(TRIM(CONCAT(title ,' ',TRIM(first_name),' ', TRIM(last_name))), '') ;
+WHERE ISNULL(TRIM(full_name), '') != ISNULL(TRIM(CONCAT(LOWER(title),' ',TRIM(LOWER(first_name)),' ', TRIM(LOWER(last_name)))), '') ;
 
-
+-- First and Last Name Extraction from Full Name
 SELECT
     full_name,
     title,
@@ -1185,7 +1187,8 @@ SELECT
         WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 2 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
         WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
     END AS first_name,
-   PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name
+   PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name ,
+   email
 FROM bronze.customers ;
 
 --#############################################################################################
