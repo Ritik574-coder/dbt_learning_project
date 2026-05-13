@@ -114,14 +114,28 @@ CONCAT(TRIM(LOWER(first_name)),' ', TRIM(LOWER(last_name))) as full_name_e
 FROM bronze.employees
 WHERE TRIM(LOWER(full_name)) != CONCAT(TRIM(LOWER(first_name)),' ', TRIM(LOWER(last_name))) ;
 
+-- string parsing to get first and last name from full name
+WITH clean_full_name AS 
+(
+    SELECT 
+        CASE 
+            WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ','')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
+        END as first_name,
+            PARSENAME(REPLACE(TRIM(full_name),' ','.'),1) as last_name
+    FROM bronze.employees
+)
+SELECT 
+    *
+FROM clean_full_name
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
 SELECT TOP (1000) 
        [employee_id]
-      ,[first_name]
-      ,[last_name]
-      ,[full_name]
+    ,CASE 
+        WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ','')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
+    END as first_name,
+        PARSENAME(REPLACE(TRIM(full_name),' ','.'),1) as last_name
       ,[email]
       ,[phone]
       ,[job_title]
