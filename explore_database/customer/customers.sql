@@ -988,6 +988,15 @@ SELECT
 FROM bronze.customers
 WHERE email NOT LIKE '%.__%' 
 
+
+SELECT 
+REPLACE(
+    LOWER(TRIM(email)),
+    '@+',
+    '@'
+)
+FROM bronze.customers
+
 -- at symbol repetition check in email column
 SELECT
     email,
@@ -1006,8 +1015,8 @@ WITH customer_email AS
         email,
         CASE
             WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0
-            THEN LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email)))) --+ REPLACE(SUBSTRING(TRIM(LOWER(email)), 
-            --CHARINDEX('@', TRIM(LOWER(email))) + 1,LEN(email)),'@','')
+            THEN LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email)))) + REPLACE(SUBSTRING(TRIM(LOWER(email)),
+            CHARINDEX('@', TRIM(LOWER(email))) + 1,LEN(email)),'@','')
         END AS cleaned_email
     FROM bronze.customers
 )
@@ -1016,10 +1025,56 @@ SELECT
 FROM customer_email
 WHERE PATINDEX('%@%@%', email) > 0 ;
 
-SELECT 
-email 
-FROM bronze.customers
+--final email cleaning query after pattern validation
+WITH clean_email AS 
+(
+SELECT
+    CASE
+        WHEN email IS NULL OR TRIM(email) = '' THEN 'Unknown'
+        WHEN TRIM(LOWER(email)) NOT LIKE '%@%' THEN 'Unknown'
+        WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN
+                LEFT(TRIM(LOWER(email)),CHARINDEX('@', TRIM(LOWER(email))) - 1)
+                + '@' +
+                REPLACE(
+                    SUBSTRING(
+                        TRIM(LOWER(email)),
+                        CHARINDEX('@', TRIM(LOWER(email))) + 1,
+                        LEN(email)),'@','')
+        ELSE
+            CONCAT(
+                LEFT(TRIM(LOWER(email)),CHARINDEX('@', TRIM(LOWER(email))) - 1), '@',
+                CASE
+                    WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'yahoocom' THEN 'yahoo.com'
+                    WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'iclod.com' THEN 'icloud.com'
+                    WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'outook.com' THEN 'outlook.com'
+                    WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'ahoo.com' THEN 'yahoo.com'
+                    ELSE RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email)))
+                END
+            )
+    END AS email
 
+FROM bronze.customers
+)
+SELECT
+    email
+FROM clean_email
+WHERE
+    email NOT LIKE '%@%'
+    OR email LIKE '@%'
+    OR email LIKE '%@%@%'
+    OR email LIKE '%.@%'
+    OR email LIKE '%..%'
+    OR email NOT LIKE '%@%.%'
 --=============================================================================================
 --=============================== customers date_of_birth cleaning ============================
 --=============================================================================================
@@ -1249,7 +1304,39 @@ SELECT TOP (1000) [customer_id]
             ELSE TRY_CONVERT(DATE, TRIM(date_of_birth), 101)
         END date_of_birth
 
-        ,TRIM(LOWER([email])) as email
+        ,CASE
+            WHEN email IS NULL OR TRIM(email) = '' THEN 'Unknown'
+            WHEN TRIM(LOWER(email)) NOT LIKE '%@%' THEN 'Unknown'
+            WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN
+                    LEFT(TRIM(LOWER(email)),CHARINDEX('@', TRIM(LOWER(email))) - 1)
+                    + '@' +
+                    REPLACE(
+                        SUBSTRING(
+                            TRIM(LOWER(email)),
+                            CHARINDEX('@', TRIM(LOWER(email))) + 1,
+                            LEN(email)),'@','')
+            ELSE
+                CONCAT(
+                    LEFT(TRIM(LOWER(email)),CHARINDEX('@', TRIM(LOWER(email))) - 1), '@',
+                    CASE
+                        WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'yahoocom' THEN 'yahoo.com'
+                        WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'iclod.com' THEN 'icloud.com'
+                        WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'outook.com' THEN 'outlook.com'
+                        WHEN RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'ahoo.com' THEN 'yahoo.com'
+                        ELSE RIGHT(
+                            TRIM(LOWER(email)),
+                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email)))
+                    END
+            )
+        END AS email
 
         ,CASE 
             WHEN TRIM(phone) LIKE '+1__________'   THEN CONCAT('+1 (', SUBSTRING(TRIM(phone), 3, 3), ') ', SUBSTRING(TRIM(phone), 6, 3),'-',   SUBSTRING(TRIM(phone),9,4))
@@ -1259,7 +1346,7 @@ SELECT TOP (1000) [customer_id]
             WHEN TRIM(phone) LIKE '(___) ___-____' THEN CONCAT('+1 ',  SUBSTRING(TRIM(phone), 1, 14))
             WHEN TRIM(phone) IS NULL OR TRIM(phone) = '' THEN 'Unknown'
             ELSE 'Unknown'
-        END  as usa_phone_pattern
+        END  as phone
 
         ,CASE 
             WHEN [address] IS NULL OR [address] = '' THEN 'Unknown'
