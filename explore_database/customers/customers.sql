@@ -1276,7 +1276,7 @@ SELECT TOP (1000) [customer_id]
             WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 2 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
             WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ', '')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
         END AS first_name,
-        PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name
+            PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 1) AS last_name
 
         ,CASE TRIM(LOWER(gender))
             WHEN 'f' THEN 'Female'
