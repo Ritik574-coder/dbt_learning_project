@@ -127,6 +127,101 @@ WITH clean_full_name AS
 SELECT 
     *
 FROM clean_full_name
+
+--=============================================================================================
+--================================= phone column cleaning =====================================
+--=============================================================================================
+-- employee phone overview
+SELECT 
+phone
+FROM bronze.employees
+
+-- employee phone data profiling
+SELECT 
+phone
+FROM bronze.employees 
+WHERE phone IS NULL 
+   OR phone = '' 
+   OR TRIM(phone) != phone 
+   OR LEN(phone) < 10 ;
+
+-- Performed phone number format profiling using pattern normalization and distribution analysis.
+WITH phone_patterns AS 
+(
+    SELECT 
+        TRANSLATE(
+            phone,
+            '0123456789',
+            '9999999999'
+        ) as patterns
+    FROM bronze.employees
+)
+SELECT 
+     patterns,
+     LEN(patterns) AS len_count,
+     COUNT(*) as pattern_count,
+     CAST(ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' AS percentage 
+FROM phone_patterns
+     GROUP BY patterns
+     ORDER BY pattern_count DESC ;
+
+
+-- patterns        len_count   pattern_count  percentage      
+-- --------------  ----------  -------------  ----------------
+-- +99999999999    12          21             21.000000000000%
+-- 999.999.9999    12          20             20.000000000000%
+-- 9999999999      10          20             20.000000000000%
+-- (999) 999-9999  14          20             20.000000000000%
+-- 999-999-9999    12          19             19.000000000000%
+
+-- Does the phone number start with '+' and contain exactly 11 characters after it?
+SELECT 
+    phone 
+FROM bronze.employees 
+WHERE phone LIKE '+___________' ;
+
+-- Dot-Separated Phone Format
+SELECT 
+    phone 
+FROM bronze.employees 
+WHERE phone LIKE '___.___.____' ;
+
+-- Plain 10-Digit Phone Format
+SELECT 
+    phone 
+FROM bronze.employees 
+WHERE phone LIKE '__________' ;
+
+-- Parenthesized US Phone Format
+SELECT 
+    phone 
+FROM bronze.employees 
+WHERE phone LIKE '(___) ___-____' ;
+
+-- Hyphen-Separated Phone Format
+SELECT 
+    phone 
+FROM bronze.employees 
+WHERE phone LIKE '___-___-____' ;
+
+-- Phone Format Normalization and Standardization
+SELECT 
+    CASE 
+        WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ', SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
+        WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9, 4))
+        WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
+        WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ',  SUBSTRING(phone, 5,8))
+        WHEN phone LIKE '(___) ___-____' THEN CONCAT('+1 ',   SUBSTRING(phone, 1, 14))
+    END as phone
+FROM bronze.employees  ;
+
+--=============================================================================================
+--================================= job_title column cleaning =================================
+--=============================================================================================
+-- employee job_title column overview
+SELECT 
+    job_title
+FROM bronze.employees
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
@@ -137,7 +232,13 @@ SELECT TOP (1000)
     END as first_name,
         PARSENAME(REPLACE(TRIM(full_name),' ','.'),1) as last_name
       ,[email]
-      ,[phone]
+    ,CASE 
+        WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ', SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
+        WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9, 4))
+        WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
+        WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ',  SUBSTRING(phone, 5,8))
+        WHEN phone LIKE '(___) ___-____' THEN CONCAT('+1 ',   SUBSTRING(phone, 1, 14))
+    END as phone
       ,[job_title]
       ,[department]
       ,[store_id]
@@ -151,5 +252,4 @@ SELECT TOP (1000)
       ,[performance_rating]
       ,[manager_id]
   FROM [TestDB].[bronze].[employees]
-
 

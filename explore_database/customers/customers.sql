@@ -1097,7 +1097,7 @@ WITH date_of_birth AS
 SELECT
     birth_date_pattern,
     COUNT(*) AS total_count,
-    CAST(ROUND(COUNT(*) * 100/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentage
+    CAST(ROUND(COUNT(*) * 100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentage
 FROM date_of_birth 
 GROUP BY birth_date_pattern
 ORDER BY total_count DESC ;
