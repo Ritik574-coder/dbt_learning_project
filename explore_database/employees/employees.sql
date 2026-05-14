@@ -166,15 +166,6 @@ FROM phone_patterns
      GROUP BY patterns
      ORDER BY pattern_count DESC ;
 
-
--- patterns        len_count   pattern_count  percentage      
--- --------------  ----------  -------------  ----------------
--- +99999999999    12          21             21.000000000000%
--- 999.999.9999    12          20             20.000000000000%
--- 9999999999      10          20             20.000000000000%
--- (999) 999-9999  14          20             20.000000000000%
--- 999-999-9999    12          19             19.000000000000%
-
 -- Does the phone number start with '+' and contain exactly 11 characters after it?
 SELECT 
     phone 
@@ -209,9 +200,9 @@ WHERE phone LIKE '___-___-____' ;
 SELECT 
     CASE 
         WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ', SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
-        WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9, 4))
-        WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
-        WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ',  SUBSTRING(phone, 5,8))
+        WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ' ,  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9,4))
+        WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ' ,  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
+        WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ' ,  SUBSTRING(phone, 5,8))
         WHEN phone LIKE '(___) ___-____' THEN CONCAT('+1 ',   SUBSTRING(phone, 1, 14))
     END as phone
 FROM bronze.employees  ;
@@ -219,38 +210,349 @@ FROM bronze.employees  ;
 --=============================================================================================
 --================================= job_title column cleaning =================================
 --=============================================================================================
--- employee job_title column overview
+-- No obvious spelling inconsistencies or naming mismatches detected in job titles.
 SELECT 
-    job_title
+    job_title,
+    COUNT(*) as job_title_count
 FROM bronze.employees
+GROUP BY job_title
+ORDER BY job_title_count DESC ;
+
+-- -- Job Title Null Handling and Standardization
+SELECT 
+    CASE 
+        WHEN job_title IS NULL OR job_title = '' THEN 'Unknown'
+        ELSE TRIM(job_title) 
+    END as job_title
+FROM bronze.employees  ;
+
+--=============================================================================================
+--================================= job_title column cleaning =================================
+--=============================================================================================
+-- No department naming inconsistencies detected.
+SELECT
+     department ,
+     COUNT(*) as department_count
+FROM bronze.employees 
+     GROUP BY department
+     ORDER BY department_count DESC ;
+
+-- Department Null Handling and Standardization
+SELECT 
+    CASE 
+        WHEN department IS NULL OR department = '' THEN 'Unknown'
+        ELSE TRIM(department)
+    END as department
+FROM bronze.employees ;
+
+--=============================================================================================
+--================================= department column cleaning ================================
+--=============================================================================================
+-- Store ID Data Validation
+SELECT 
+      store_id 
+FROM  bronze.employees 
+WHERE store_id IS NULL 
+   OR store_id = ''
+   OR TRY_CONVERT(INT, store_id) IS NULL ;
+
+-- Store ID Distribution Analysis
+SELECT 
+      store_id ,
+      COUNT(*) as store_id_count
+FROM  bronze.employees 
+GROUP BY store_id 
+ORDER BY store_id_count DESC ;
+
+-- Store ID Integer Conversion and Validation
+SELECT 
+    CASE 
+        WHEN store_id < 0 OR TRY_CONVERT(INT, store_id) IS NULL THEN NULL
+        ELSE TRY_CONVERT(INT, store_id) 
+    END as store_id 
+FROM bronze.employees ;
+
+--=============================================================================================
+--================================= store_name column cleaning ================================
+--=============================================================================================
+
+-- Store Name Data Validation
+SELECT 
+     store_name 
+FROM bronze.employees 
+WHERE store_name IS NULL 
+   OR store_name = ''
+   OR LEN(store_name) < 4
+   OR TRIM(store_name) != store_name  ;
+
+-- Store Name Distribution Analysis
+SELECT 
+    store_name,
+    COUNT(*) as store_count,
+    CAST(ROUND(COUNT(*) * 100/SUM(COUNT(*)) OVER(),2) AS NVARCHAR) + '%' as percentage 
+FROM bronze.employees
+    GROUP BY store_name
+    ORDER BY store_count DESC ;
+
+-- Store Name Cleaning and Standardization
+SELECT
+    CASE 
+        WHEN store_name IS NULL OR store_name = '' THEN 'Unknown'
+        ELSE TRIM(store_name)
+    END as store_name
+FROM bronze.employees ;
+
+--=============================================================================================
+--================================= store_city column cleaning ================================
+--=============================================================================================
+-- Store City Data Validation
+SELECT 
+     store_city
+FROM bronze.employees 
+WHERE store_city IS NULL 
+   OR store_city = ''
+   OR LEN(store_city) < 4 
+   OR TRIM(store_city) != store_city ;
+
+-- Store City Distribution Analysis
+SELECT 
+     store_city,
+     COUNT(*) AS store_city_count,
+     CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentage 
+FROM bronze.employees 
+    GROUP BY store_city 
+    ORDER BY store_city_count DESC ;
+
+-- Store City Cleaning and Standardization
+SELECT 
+    CASE 
+        WHEN store_city IS NULL OR LEN(store_city) < 4 OR store_city = '' THEN 'Unknown'
+        ELSE TRIM(store_city)
+    END store_city
+FROM bronze.employees ;
+
+--=============================================================================================
+--================================= hire_date column cleaning =================================
+--=============================================================================================
+-- employee hire_date overview 
+SELECT 
+    hire_date 
+FROM bronze.employees ;
+
+-- employee hire_date Data Validation
+SELECT
+      hire_date 
+FROM  bronze.employees 
+WHERE hire_date IS NULL 
+    OR hire_date = ''
+    OR TRIM(hire_date) != hire_date 
+    OR LEN(hire_date) < 8 ;
+
+-- 
+WITH date_pattern AS 
+(
+    SELECT
+        TRANSLATE(
+            TRIM(LOWER(hire_date)),
+            '0123456789abcdefghijklmnopqrstuvwxyz',
+            '9999999999aaaaaaaaaaaaaaaaaaaaaaaaaa'
+        ) as pattern 
+    FROM bronze.employees
+)
+SELECT 
+    pattern ,
+    COUNT(*) as pattern_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2)as NVARCHAR) + '%' as percentage 
+FROM date_pattern 
+    GROUP BY pattern
+    ORDER BY pattern_count DESC ; 
+
+-- 
+SELECT 
+    hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN TRY_CONVERT(DATE,hire_date)
+    END hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' ;
+
+--
+SELECT 
+    hire_date
+FROM bronze.employees  
+WHERE hire_date LIKE '[A-Z][a-z][a-z] __, ____' ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____' THEN TRY_CONVERT(DATE, hire_date)
+    END hire_date
+FROM bronze.employees  
+WHERE hire_date LIKE '[A-Z][a-z][a-z] __, ____' ;
+
+--
+SELECT 
+    hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '____-__-__' ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '____-__-__' THEN TRY_CONVERT(DATE, hire_date)
+    END AS hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '____-__-__' ;
+
+--
+SELECT 
+    hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '____/__/__' ;
+
+--
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '____/__/__' THEN TRY_CONVERT(DATE, hire_date)
+    END AS hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '____/__/__' ;
+
+--
+SELECT 
+    hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '__/__/____' ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,103)
+    END hire_date
+FROM bronze.employees 
+WHERE  hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,101)
+    END hire_date
+FROM bronze.employees 
+WHERE  hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 ;
+
+--
+SELECT 
+    hire_date
+FROM bronze.employees 
+WHERE hire_date LIKE '__-__-____' ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 105)
+    END hire_date
+FROM bronze.employees 
+WHERE  hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 ;
+
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 110)
+    END hire_date
+FROM bronze.employees 
+WHERE  hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 ;
+
+
+
+-- FINEAL  QUERY 
+SELECT 
+    CASE 
+        WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN TRY_CONVERT(DATE,hire_date )
+        WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____'       THEN TRY_CONVERT(DATE, hire_date)
+        WHEN hire_date LIKE '____-__-__'                     THEN TRY_CONVERT(DATE, hire_date)
+        WHEN hire_date LIKE '____/__/__'                     THEN TRY_CONVERT(DATE, hire_date)
+
+        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,103)
+        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 105)
+
+        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,101)
+        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 110)
+        ELSE TRY_CONVERT(DATE, hire_date)
+    END hire_date
+FROM bronze.employees 
+
+
+
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
 SELECT TOP (1000) 
        [employee_id]
+
     ,CASE 
         WHEN LEN(TRIM(full_name)) - LEN(REPLACE(TRIM(full_name), ' ','')) = 1 THEN PARSENAME(REPLACE(TRIM(full_name), ' ', '.'), 2)
     END as first_name,
+
         PARSENAME(REPLACE(TRIM(full_name),' ','.'),1) as last_name
+
       ,[email]
+
     ,CASE 
         WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ', SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
-        WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9, 4))
-        WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ',  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
-        WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ',  SUBSTRING(phone, 5,8))
-        WHEN phone LIKE '(___) ___-____' THEN CONCAT('+1 ',   SUBSTRING(phone, 1, 14))
+        WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ' ,  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9,4))
+        WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ' ,  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
+        WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ' ,  SUBSTRING(phone, 5,8))
+        WHEN phone LIKE '(___) ___-____' THEN CONCAT('+1 ',   SUBSTRING(phone, 1,14))
     END as phone
-      ,[job_title]
-      ,[department]
-      ,[store_id]
-      ,[store_name]
-      ,[store_city]
-      ,[hire_date]
+
+    ,CASE 
+        WHEN job_title IS NULL OR job_title = '' THEN 'Unknown'
+        ELSE TRIM(job_title) 
+    END as job_title
+
+    ,CASE 
+        WHEN department IS NULL OR department = '' THEN 'Unknown'
+        ELSE TRIM(department)
+    END as department
+
+    ,CASE 
+        WHEN store_id < 0 OR TRY_CONVERT(INT, store_id) IS NULL THEN NULL
+        ELSE TRY_CONVERT(INT, store_id) 
+    END as store_id 
+
+    ,CASE 
+        WHEN store_name IS NULL OR store_name = '' THEN 'Unknown'
+        ELSE TRIM(store_name)
+    END as store_name
+
+    ,CASE 
+        WHEN store_city IS NULL OR LEN(store_city) < 4 OR store_city = '' THEN 'Unknown'
+        ELSE TRIM(store_city)
+    END store_city
+
+    ,CASE 
+        WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN TRY_CONVERT(DATE,hire_date )
+        WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____'       THEN TRY_CONVERT(DATE, hire_date)
+        WHEN hire_date LIKE '____-__-__'                     THEN TRY_CONVERT(DATE, hire_date)
+        WHEN hire_date LIKE '____/__/__'                     THEN TRY_CONVERT(DATE, hire_date)
+
+        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,103)
+        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 105)
+        
+        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,101)
+        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 110)
+        ELSE TRY_CONVERT(DATE, hire_date)
+    END hire_date
+
       ,[years_employed]
+
       ,[annual_salary_usd]
+
       ,[commission_rate_pct]
+
       ,[is_active]
+
       ,[performance_rating]
+
       ,[manager_id]
+
   FROM [TestDB].[bronze].[employees]
 
