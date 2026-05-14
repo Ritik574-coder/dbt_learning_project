@@ -22,3 +22,4 @@ You should receive an acknowledgment within 3 business days.
 - Never commit `.env` files, credentials, tokens, or connection strings.
 - Treat bootstrap scripts as templates and replace sample passwords.
 - Rotate any secret immediately if accidentally exposed.
+
