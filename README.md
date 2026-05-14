@@ -1,27 +1,72 @@
 # 📊 dbt SQL Server Learning Project
 
-This repository contains my hands-on learning and implementation of **dbt (Data Build Tool)** using a **SQL Server database**. The goal of this project is to build a strong foundation in modern data transformation workflows and analytics engineering practices.
+A hands-on learning repository focused on mastering **dbt (Data Build Tool)** with **Microsoft SQL Server**.  
+This project is designed to build practical skills in modern data transformation, analytics engineering, and production-style data modeling workflows.
 
 ---
 
-## 🚀 Project Objective
+# 🚀 Project Goals
 
-- Learn and implement dbt fundamentals from scratch
-- Work with SQL Server as the data warehouse
-- Build modular, scalable, and testable data models
-- Understand real-world data transformation pipelines
+The primary objective of this repository is to:
+
+- Learn dbt fundamentals through real implementation
+- Build scalable and maintainable SQL transformation pipelines
+- Understand analytics engineering best practices
+- Work with SQL Server as the transformation layer backend
+- Develop production-style dbt project architecture
 
 ---
 
-## 🧠 What I’m Learning
+# 🧠 Topics Covered
 
-- dbt project structure and configuration
-- Writing modular SQL models
-- Staging, intermediate, and mart layers
-- Data testing (schema + custom tests)
+This project includes practical implementation of:
+
+## Core dbt Concepts
+- dbt project structure
+- dbt models and materializations
+- Jinja templating
+- dbt configurations
+
+## Data Modeling Layers
+- Staging models (`stg`)
+- Intermediate transformations (`int`)
+- Mart/business models (`mart`)
+
+## Data Quality & Testing
+- Schema tests
+- Custom tests
+- Data validation techniques
+- Source freshness checks
+
+## Advanced dbt Features
 - Incremental models
-- Documentation and lineage
-- Environment management (dev/prod)
+- Snapshots
+- Seeds
+- Macros
+- Variables and environments
+
+## Documentation & Lineage
+- Auto-generated dbt documentation
+- Model lineage tracking
+- Dependency visualization
+
+## Development Workflow
+- Local development setup
+- Environment management (`dev` / `prod`)
+- Debugging and troubleshooting
+- CI/CD fundamentals for dbt projects
+
+---
+
+# 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| dbt Core | Data transformation framework |
+| SQL Server | Data warehouse / database |
+| SQL | Data transformation language |
+| Git & GitHub | Version control |
+| Python | dbt runtime environment |
 
 ---
 
