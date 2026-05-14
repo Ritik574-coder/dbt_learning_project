@@ -334,21 +334,22 @@ FROM bronze.employees ;
 --=============================================================================================
 --================================= hire_date column cleaning =================================
 --=============================================================================================
--- employee hire_date overview 
+
+-- Employee Hire Date Overview
 SELECT 
     hire_date 
 FROM bronze.employees ;
 
--- employee hire_date Data Validation
+-- Employee Hire Date Data Validation
 SELECT
       hire_date 
-FROM  bronze.employees 
+FROM bronze.employees 
 WHERE hire_date IS NULL 
     OR hire_date = ''
     OR TRIM(hire_date) != hire_date 
     OR LEN(hire_date) < 8 ;
 
--- 
+-- Hire Date Pattern Analysis
 WITH date_pattern AS 
 (
     SELECT
@@ -356,131 +357,312 @@ WITH date_pattern AS
             TRIM(LOWER(hire_date)),
             '0123456789abcdefghijklmnopqrstuvwxyz',
             '9999999999aaaaaaaaaaaaaaaaaaaaaaaaaa'
-        ) as pattern 
+        ) AS pattern 
     FROM bronze.employees
 )
 SELECT 
-    pattern ,
-    COUNT(*) as pattern_count,
-    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2)as NVARCHAR) + '%' as percentage 
+    pattern,
+    COUNT(*) AS pattern_count,
+    CAST(
+        ROUND(
+            COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(),
+            2
+        ) AS NVARCHAR
+    ) + '%' AS percentage 
 FROM date_pattern 
-    GROUP BY pattern
-    ORDER BY pattern_count DESC ; 
+GROUP BY pattern
+ORDER BY pattern_count DESC; 
 
--- 
+-- Full Month Name Date Format Validation
 SELECT 
     hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' ;
 
+-- Full Month Name Date Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN TRY_CONVERT(DATE,hire_date)
-    END hire_date
+        WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' 
+        THEN TRY_CONVERT(DATE, hire_date)
+    END AS hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' ;
 
---
+-- Short Month Name Date Format Validation
 SELECT 
     hire_date
 FROM bronze.employees  
 WHERE hire_date LIKE '[A-Z][a-z][a-z] __, ____' ;
 
+-- Short Month Name Date Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____' THEN TRY_CONVERT(DATE, hire_date)
-    END hire_date
+        WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____' 
+        THEN TRY_CONVERT(DATE, hire_date)
+    END AS hire_date
 FROM bronze.employees  
 WHERE hire_date LIKE '[A-Z][a-z][a-z] __, ____' ;
 
---
+-- ISO Date Format Validation
 SELECT 
     hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '____-__-__' ;
 
+-- ISO Date Format Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '____-__-__' THEN TRY_CONVERT(DATE, hire_date)
+        WHEN hire_date LIKE '____-__-__' 
+        THEN TRY_CONVERT(DATE, hire_date)
     END AS hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '____-__-__' ;
 
---
+-- Slash-Separated ISO Date Format Validation
 SELECT 
     hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '____/__/__' ;
 
---
+-- Slash-Separated ISO Date Format Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '____/__/__' THEN TRY_CONVERT(DATE, hire_date)
+        WHEN hire_date LIKE '____/__/__' 
+        THEN TRY_CONVERT(DATE, hire_date)
     END AS hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '____/__/__' ;
 
---
+-- Slash-Separated DD/MM/YYYY Format Validation
 SELECT 
     hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '__/__/____' ;
 
+-- DD/MM/YYYY Date Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,103)
-    END hire_date
+        WHEN hire_date LIKE '__/__/____' 
+         AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 
+        THEN TRY_CONVERT(DATE, hire_date, 103)
+    END AS hire_date
 FROM bronze.employees 
-WHERE  hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 ;
+WHERE hire_date LIKE '__/__/____' 
+  AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 ;
 
+-- MM/DD/YYYY Date Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,101)
-    END hire_date
+        WHEN hire_date LIKE '__/__/____' 
+         AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 
+        THEN TRY_CONVERT(DATE, hire_date, 101)
+    END AS hire_date
 FROM bronze.employees 
-WHERE  hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 ;
+WHERE hire_date LIKE '__/__/____' 
+  AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 ;
 
---
+-- Hyphen-Separated DD-MM-YYYY Format Validation
 SELECT 
     hire_date
 FROM bronze.employees 
 WHERE hire_date LIKE '__-__-____' ;
 
+-- DD-MM-YYYY Date Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 105)
-    END hire_date
+        WHEN hire_date LIKE '__-__-____' 
+         AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 
+        THEN TRY_CONVERT(DATE, hire_date, 105)
+    END AS hire_date
 FROM bronze.employees 
-WHERE  hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 ;
+WHERE hire_date LIKE '__-__-____' 
+  AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 ;
 
+-- MM-DD-YYYY Date Conversion
 SELECT 
     CASE 
-        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 110)
-    END hire_date
+        WHEN hire_date LIKE '__-__-____' 
+         AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 
+        THEN TRY_CONVERT(DATE, hire_date, 110)
+    END AS hire_date
 FROM bronze.employees 
-WHERE  hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 ;
+WHERE hire_date LIKE '__-__-____' 
+  AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 ;
 
+-- Final Hire Date Cleaning and Standardization Query
+WITH clean_hire_date AS 
+(
+    SELECT 
+        CASE 
+            WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN TRY_CONVERT(DATE, hire_date)
+            WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____'       THEN TRY_CONVERT(DATE, hire_date)
+            WHEN hire_date LIKE '____-__-__'                     THEN TRY_CONVERT(DATE, hire_date)
+            WHEN hire_date LIKE '____/__/__'                     THEN TRY_CONVERT(DATE, hire_date)
 
+            WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 103)
+            WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 105)
 
--- FINEAL  QUERY 
+            WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 101)
+            WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 110)
+            ELSE TRY_CONVERT(DATE, hire_date)
+        END AS hire_date
+    FROM bronze.employees 
+)
+
+SELECT 
+    *
+FROM clean_hire_date
+WHERE hire_date LIKE '____-__-__' ;
+
+--=============================================================================================
+--============================= is_active column profiling ====================================
+--=============================================================================================
+-- Raw is_active data overview
+SELECT 
+     is_active
+FROM bronze.employees ;
+
+-- is_active data quality validation
+SELECT 
+      is_active
+FROM  bronze.employees 
+WHERE is_active IS NULL 
+   OR is_active = ''
+   OR is_active != TRIM(is_active) ;
+
+-- is_active value distribution analysis
+SELECT 
+    is_active,
+    COUNT(*) as is_active_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) as NVARCHAR) + '%' as percentage 
+FROM bronze.employees
+GROUP BY is_active
+ORDER BY is_active_count DESC ;
+
+--== Standardizing is_active values into boolean format
+WITH clean_is_active AS 
+(
+    SELECT 
+        CASE
+            WHEN TRIM(LOWER(is_active)) IN ('active', 'y', 'yes', '1', 'true')     THEN 'True'
+            WHEN TRIM(LOWER(is_active)) IN ('terminated', 'n', 'no', '0', 'false') THEN 'False'
+            ELSE NULL
+        END AS is_active
+    FROM bronze.employees
+)
+-- Standardized is_active distribution analysis
+SELECT 
+     is_active,
+     COUNT(*) as is_active_count,
+     CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' AS percentage 
+FROM clean_is_active 
+GROUP BY is_active
+ORDER BY is_active_count ;
+
+--=============================================================================================
+--============================= performance_rating column cleaning ============================
+--=============================================================================================
+-- Raw performance_rating data overview
+SELECT 
+performance_rating
+FROM bronze.employees
+
+-- performance_rating data quality validation
+SELECT 
+      performance_rating
+FROM  bronze.employees 
+WHERE performance_rating IS NULL 
+   OR performance_rating = ''
+   OR performance_rating != TRIM(performance_rating) ;
+
+-- performance_rating value distribution analysis
+SELECT 
+    performance_rating,
+    COUNT(*) as performance_rating_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) as NVARCHAR) + '%' as percentage 
+FROM bronze.employees
+GROUP BY performance_rating
+ORDER BY performance_rating_count DESC ;
+
+-- Standardizing performance_rating values
+WITH clean_performance_rating AS
+(
+    SELECT
+        CASE
+            WHEN TRIM(LOWER(performance_rating)) IN ('excellent', 'a', '5')     THEN 'Excellent'
+            WHEN TRIM(LOWER(performance_rating)) IN ('good', 'b', '4')          THEN 'Good'
+            WHEN TRIM(LOWER(performance_rating)) IN ('average', 'c', '3')       THEN 'Average'
+            WHEN TRIM(LOWER(performance_rating)) IN ('below average', 'd', '2') THEN 'Below Average'
+            WHEN performance_rating IS NULL OR TRIM(performance_rating) = ''    THEN 'Unknown'
+            ELSE 'Unknown'
+        END AS performance_rating
+    FROM bronze.employees
+)
+-- Standardized performance_rating distribution analysis
+SELECT
+    performance_rating,
+    COUNT(*) AS performance_rating_count,
+    CAST(ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' AS percentage
+FROM clean_performance_rating
+GROUP BY performance_rating
+ORDER BY performance_rating_count DESC ;
+
+--=============================================================================================
+--============================= annual_salary_usd column cleaning =============================
+--=============================================================================================
+-- annual_salary_usd data profiling
+SELECT 
+    annual_salary_usd
+FROM bronze.employees
+WHERE annual_salary_usd IS NULL 
+   OR annual_salary_usd = ''
+   OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL 
+   OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 ;
+
+-- Final annual_salary_usd Cleaning and Standardization Query
+WITH salary_analysis AS 
+(
 SELECT 
     CASE 
-        WHEN hire_date LIKE '[A-Z][a-z][a-z][a-z]% __, ____' THEN TRY_CONVERT(DATE,hire_date )
-        WHEN hire_date LIKE '[A-Z][a-z][a-z] __, ____'       THEN TRY_CONVERT(DATE, hire_date)
-        WHEN hire_date LIKE '____-__-__'                     THEN TRY_CONVERT(DATE, hire_date)
-        WHEN hire_date LIKE '____/__/__'                     THEN TRY_CONVERT(DATE, hire_date)
-
-        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,103)
-        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, LEFT(hire_date, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 105)
-
-        WHEN hire_date LIKE '__/__/____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN  TRY_CONVERT(DATE, hire_date,101)
-        WHEN hire_date LIKE '__-__-____' AND TRY_CONVERT(INT, SUBSTRING(hire_date, 4, 2)) > 12 THEN TRY_CONVERT(DATE, hire_date, 110)
-        ELSE TRY_CONVERT(DATE, hire_date)
-    END hire_date
+        WHEN annual_salary_usd IS NULL OR annual_salary_usd = '' OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
+        ELSE TRY_CONVERT(DECIMAL(18,2), annual_salary_usd)
+    END AS annual_salary_usd
 FROM bronze.employees 
+)
+SELECT 
+    annual_salary_usd
+FROM salary_analysis
+WHERE annual_salary_usd IS NULL ;
+--=============================================================================================
+--============================= years_employed column cleaning ================================
+--=============================================================================================
 
+--=============================================================================================
+--============================= commission_rate_pct column cleaning ===========================
+--=============================================================================================
+-- commission_rate_pct data profiling
+SELECT 
+    commission_rate_pct
+FROM bronze.employees
+WHERE commission_rate_pct IS NULL 
+   OR commission_rate_pct = ''
+   OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) IS NULL 
+   OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) < 0 ;
 
-
+-- Final commission_rate_pct Cleaning and Standardization Query
+WITH commission_analysis AS 
+(
+SELECT 
+    CASE 
+        WHEN commission_rate_pct IS NULL OR commission_rate_pct = '' OR TRY_CONVERT(DECIMAL(10,2), commission_rate_pct) IS NULL OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) < 0 THEN NULL
+        ELSE TRY_CONVERT(DECIMAL(10,2), commission_rate_pct)
+    END AS commission_rate_pct
+FROM bronze.employees 
+)
+SELECT 
+    commission_rate_pct
+FROM commission_analysis
+WHERE commission_rate_pct IS NULL ;
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
@@ -544,13 +726,30 @@ SELECT TOP (1000)
 
       ,[years_employed]
 
-      ,[annual_salary_usd]
+    ,CASE 
+        WHEN annual_salary_usd IS NULL OR annual_salary_usd = '' OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
+        ELSE TRY_CONVERT(DECIMAL(18,2), annual_salary_usd)
+    END AS annual_salary_usd
 
-      ,[commission_rate_pct]
+    ,CASE 
+        WHEN commission_rate_pct IS NULL OR commission_rate_pct = '' OR TRY_CONVERT(DECIMAL(10,2), commission_rate_pct) IS NULL OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) < 0 THEN NULL
+        ELSE TRY_CONVERT(DECIMAL(10,2), commission_rate_pct)
+    END AS commission_rate_pct
 
-      ,[is_active]
+    ,CASE
+        WHEN TRIM(LOWER(is_active)) IN ('active', 'y', 'yes', '1', 'true')     THEN 'True'
+        WHEN TRIM(LOWER(is_active)) IN ('terminated', 'n', 'no', '0', 'false') THEN 'False'
+        ELSE NULL
+    END AS is_active
 
-      ,[performance_rating]
+    ,CASE
+        WHEN TRIM(LOWER(performance_rating)) IN ('excellent', 'a', '5')     THEN 'Excellent'
+        WHEN TRIM(LOWER(performance_rating)) IN ('good', 'b', '4')          THEN 'Good'
+        WHEN TRIM(LOWER(performance_rating)) IN ('average', 'c', '3')       THEN 'Average'
+        WHEN TRIM(LOWER(performance_rating)) IN ('below average', 'd', '2') THEN 'Below Average'
+        WHEN performance_rating IS NULL OR TRIM(performance_rating) = ''    THEN 'Unknown'
+        ELSE 'Unknown'
+    END AS performance_rating
 
       ,[manager_id]
 
