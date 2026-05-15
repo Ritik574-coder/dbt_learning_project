@@ -692,6 +692,109 @@ SELECT
     commission_rate_pct
 FROM commission_analysis
 WHERE commission_rate_pct IS NULL ;
+
+--=============================================================================================
+--================================== years_employed column cleaning ===========================
+--=============================================================================================
+-- years_employed  data profiling 
+SELECT 
+       years_employed 
+FROM   bronze.employees 
+WHERE  years_employed IS NULL 
+    OR years_employed < 0
+    OR TRY_CONVERT(DECIMAL(4, 2), years_employed) IS NULL ;
+
+-- Final years_employed Cleaning and Standardization Query
+WITH clean_years_employed AS 
+(
+    SELECT 
+        CASE 
+            WHEN years_employed IS NULL 
+            OR TRY_CONVERT(DECIMAL(4,2), years_employed) IS NULL 
+            OR TRY_CONVERT(DECIMAL(4,2), years_employed) < 0 THEN NULL 
+            ELSE TRY_CONVERT(DECIMAL(4,2), TRY_CONVERT(DECIMAL(4,2), years_employed))
+        END years_employed
+    FROM bronze.employees 
+)
+SELECT 
+    *
+FROM clean_years_employed 
+WHERE years_employed IS NULL ;
+
+--=============================================================================================
+--================================== email column cleaning ====================================
+--=============================================================================================
+-- employees email data overvew 
+SELECT 
+    email 
+FROM bronze.employees ;
+
+-- employees email data profiling 
+SELECT 
+      email 
+FROM  bronze.employees 
+WHERE email IS NULL 
+   OR email = '' ;
+
+-- employees email value distribution analysis
+SELECT 
+    email ,
+    COUNT(*) as email_count 
+FROM bronze.employees
+    GROUP BY email 
+    HAVING COUNT(*) > 1 ;
+
+
+-- checking those email they contain mere then one '@'
+SELECT 
+    email 
+FROM bronze.employees 
+WHERE PATINDEX('%@%@%', email) > 0 ;
+
+-- checking those email they contain more then one '.'
+SELECT 
+    email 
+FROM bronze.employees 
+WHERE PATINDEX('%.%.%', email) > 0 ;
+
+-- check email where '@' are messing 
+SELECT 
+    email 
+FROM bronze.employees 
+WHERE email NOT LIKE '%@%' ;
+
+-- checking email whre suer_name are messing 
+SELECT 
+    email 
+FROM bronze.employees 
+WHERE email LIKE '@%' ;
+
+-- checking email whre domain are messing 
+SELECT 
+    email 
+FROM bronze.employees 
+WHERE email LIKE '%@' ;
+
+-- check email where dot '.' are messing 
+SELECT 
+    email 
+FROM bronze.employees 
+WHERE email NOT LIKE '%.%' ;
+
+-- checking employee email domain
+WITH email_check AS 
+(
+    SELECT 
+        SUBSTRING(email, CHARINDEX('@', email)+1, LEN(email)) as domain 
+    FROM bronze.employees
+)
+SELECT 
+    domain,
+    COUNT(*) as domain_count,
+    CAST(ROUND(COUNT(*)*100/SUM(COUNT(*)) OVER(), 2)AS NVARCHAR) + '%' as percentage 
+FROM email_check
+    GROUP BY domain
+    ORDER BY domain_count DESC;
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
@@ -755,6 +858,13 @@ SELECT TOP (1000)
     END hire_date
 
     ,CASE 
+        WHEN years_employed IS NULL 
+        OR TRY_CONVERT(DECIMAL(4,2), years_employed) IS NULL 
+        OR TRY_CONVERT(DECIMAL(4,2), years_employed) < 0 THEN NULL 
+        ELSE TRY_CONVERT(DECIMAL(4,2), TRY_CONVERT(DECIMAL(4,2), years_employed))
+    END years_employed
+
+    ,CASE 
         WHEN annual_salary_usd IS NULL 
         OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL 
         OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
@@ -789,4 +899,3 @@ SELECT TOP (1000)
     END as manager_id
 
   FROM [TestDB].[bronze].[employees]
-
