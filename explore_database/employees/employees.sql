@@ -624,7 +624,9 @@ WITH salary_analysis AS
 (
 SELECT 
     CASE 
-        WHEN annual_salary_usd IS NULL OR annual_salary_usd = '' OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
+        WHEN annual_salary_usd IS NULL 
+        OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL 
+        OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
         ELSE TRY_CONVERT(DECIMAL(18,2), annual_salary_usd)
     END AS annual_salary_usd
 FROM bronze.employees 
@@ -634,8 +636,33 @@ SELECT
 FROM salary_analysis
 WHERE annual_salary_usd IS NULL ;
 --=============================================================================================
---============================= years_employed column cleaning ================================
+--================================= manager_id column cleaning ================================
 --=============================================================================================
+-- employee manager_id data profiling 
+SELECT 
+    manager_id
+FROM bronze.employees 
+WHERE manager_id IS NULL 
+   OR manager_id = ''
+   OR TRY_CONVERT(INT, manager_id) IS NULL 
+   OR manager_id < 0 ;
+
+-- manager_id value distribution analysis
+SELECT 
+    manager_id ,
+    COUNT(*) manager_count,
+    CAST(ROUND(COUNT(*)*100/SUM(COUNT(*)) OVER(), 2) as NVARCHAR) as percentage 
+FROM bronze.employees 
+    GROUP BY manager_id 
+    ORDER BY manager_count DESC ;
+
+-- Final manager_id Cleaning and Standardization Query
+SELECT 
+    CASE 
+        WHEN TRY_CONVERT(INT ,manager_id) IS NULL THEN NULL 
+        ELSE manager_id 
+    END as manager_id
+FROM bronze.employees 
 
 --=============================================================================================
 --============================= commission_rate_pct column cleaning ===========================
@@ -646,18 +673,20 @@ SELECT
 FROM bronze.employees
 WHERE commission_rate_pct IS NULL 
    OR commission_rate_pct = ''
-   OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) IS NULL 
-   OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) < 0 ;
+   OR TRY_CONVERT(DECIMAL(4,2), commission_rate_pct) IS NULL 
+   OR TRY_CONVERT(DECIMAL(4,2), commission_rate_pct) < 0 ;
 
 -- Final commission_rate_pct Cleaning and Standardization Query
 WITH commission_analysis AS 
 (
-SELECT 
-    CASE 
-        WHEN commission_rate_pct IS NULL OR commission_rate_pct = '' OR TRY_CONVERT(DECIMAL(10,2), commission_rate_pct) IS NULL OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) < 0 THEN NULL
-        ELSE TRY_CONVERT(DECIMAL(10,2), commission_rate_pct)
-    END AS commission_rate_pct
-FROM bronze.employees 
+    SELECT 
+        CASE 
+            WHEN commission_rate_pct IS NULL 
+            OR TRY_CONVERT(DECIMAL(4,2), commission_rate_pct) IS NULL 
+            OR TRY_CONVERT(DECIMAL(4,2), commission_rate_pct) < 0 THEN NULL
+            ELSE TRY_CONVERT(DECIMAL(4,2), commission_rate_pct)
+        END AS commission_rate_pct
+    FROM bronze.employees 
 )
 SELECT 
     commission_rate_pct
@@ -666,6 +695,7 @@ WHERE commission_rate_pct IS NULL ;
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
+
 SELECT TOP (1000) 
        [employee_id]
 
@@ -678,11 +708,11 @@ SELECT TOP (1000)
       ,[email]
 
     ,CASE 
-        WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ', SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
+        WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ',  SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
         WHEN phone LIKE '___.___.____'   THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ' ,  SUBSTRING(phone,5, 3), '-',  SUBSTRING(phone,9,4))
         WHEN phone LIKE '__________'     THEN  CONCAT('+1 (', SUBSTRING(phone, 1,3), ') ' ,  SUBSTRING(phone, 4,3), '-',  SUBSTRING(phone,7,4))
         WHEN phone LIKE '___-___-____'   THEN  CONCAT('+1 (', SUBSTRING(phone,1, 3), ') ' ,  SUBSTRING(phone, 5,8))
-        WHEN phone LIKE '(___) ___-____' THEN CONCAT('+1 ',   SUBSTRING(phone, 1,14))
+        WHEN phone LIKE '(___) ___-____' THEN  CONCAT('+1 ',  SUBSTRING(phone, 1,14))
     END as phone
 
     ,CASE 
@@ -724,16 +754,18 @@ SELECT TOP (1000)
         ELSE TRY_CONVERT(DATE, hire_date)
     END hire_date
 
-      ,[years_employed]
-
     ,CASE 
-        WHEN annual_salary_usd IS NULL OR annual_salary_usd = '' OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
+        WHEN annual_salary_usd IS NULL 
+        OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) IS NULL 
+        OR TRY_CONVERT(DECIMAL(18,2), annual_salary_usd) < 0 THEN NULL
         ELSE TRY_CONVERT(DECIMAL(18,2), annual_salary_usd)
     END AS annual_salary_usd
 
     ,CASE 
-        WHEN commission_rate_pct IS NULL OR commission_rate_pct = '' OR TRY_CONVERT(DECIMAL(10,2), commission_rate_pct) IS NULL OR TRY_CONVERT(DECIMAL(18,2), commission_rate_pct) < 0 THEN NULL
-        ELSE TRY_CONVERT(DECIMAL(10,2), commission_rate_pct)
+        WHEN commission_rate_pct IS NULL 
+        OR TRY_CONVERT(DECIMAL(4,2), commission_rate_pct) IS NULL 
+        OR TRY_CONVERT(DECIMAL(4,2), commission_rate_pct) < 0 THEN NULL
+        ELSE TRY_CONVERT(DECIMAL(4,2), commission_rate_pct)
     END AS commission_rate_pct
 
     ,CASE
@@ -751,7 +783,10 @@ SELECT TOP (1000)
         ELSE 'Unknown'
     END AS performance_rating
 
-      ,[manager_id]
+    ,CASE 
+        WHEN TRY_CONVERT(INT ,manager_id) IS NULL THEN NULL 
+        ELSE manager_id 
+    END as manager_id
 
   FROM [TestDB].[bronze].[employees]
 
