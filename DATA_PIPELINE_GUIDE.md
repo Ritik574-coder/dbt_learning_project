@@ -36,12 +36,69 @@ The project is structured into three distinct functional layers to ensure data q
 Organize your models directory by layer to keep the project maintainable:
 
 models/
-├── silver/     # Transformations, cleaning, standardization
-│   ├── customers.sql
-│   ├── employees.sql
-│   └── schema.yml
-└── gold/       # Business logic, aggregations, KPIs
-    └── dim_customers.sql
+│
+├── staging/
+│   │
+│   ├── bronze/
+│   │   ├── src_employees.sql
+│   │   ├── src_customers.sql
+│   │   ├── src_orders.sql
+│   │   ├── src_products.sql
+│   │   ├── src_inventory.sql
+│   │   ├── src_stores.sql
+│   │   ├── src_payments.sql
+│   │   └── src_shipments.sql
+│   │
+│   └── silver/
+│       │
+│       ├── intermediate/
+│       │   │
+│       │   ├── employees/
+│       │   │   ├── int_employee_name_cleaning.sql
+│       │   │   ├── int_employee_email_cleaning.sql
+│       │   │   ├── int_employee_phone_cleaning.sql
+│       │   │   ├── int_employee_date_cleaning.sql
+│       │   │   └── int_employee_status_cleaning.sql
+│       │   │
+│       │   ├── customers/
+│       │   ├── orders/
+│       │   ├── inventory/
+│       │   └── products/
+│       │
+│       ├── silver_employees.sql
+│       ├── silver_customers.sql
+│       ├── silver_orders.sql
+│       ├── silver_products.sql
+│       ├── silver_inventory.sql
+│       ├── silver_stores.sql
+│       ├── silver_payments.sql
+│       └── silver_shipments.sql
+│
+├── marts/
+│   │
+│   ├── dimensions/
+│   │   ├── dim_customers.sql
+│   │   ├── dim_products.sql
+│   │   ├── dim_employees.sql
+│   │   └── dim_stores.sql
+│   │
+│   ├── facts/
+│   │   ├── fact_orders.sql
+│   │   ├── fact_inventory.sql
+│   │   ├── fact_payments.sql
+│   │   └── fact_shipments.sql
+│   │
+│   └── reporting/
+│       ├── sales_summary.sql
+│       ├── inventory_summary.sql
+│       └── employee_performance.sql
+│
+├── tests/
+│
+├── macros/
+│
+└── seeds/
+
 ```
 
 ### 🔍 B. Source Definition & Testing
