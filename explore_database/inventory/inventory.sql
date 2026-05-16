@@ -248,6 +248,40 @@ FROM bronze.inventory_snapshots
     HAVING COUNT(*) > 1
     ORDER BY category_count DESC;
 
+-- category case-sensitive distribution analysis 
+SELECT 
+    category COLLATE Latin1_General_CS_AS as category ,
+    COUNT(*) as total_count
+FROM bronze.inventory_snapshots
+GROUP BY category COLLATE Latin1_General_CS_AS
+ORDER BY total_count DESC ;
+
+-- category cleaning and standardization 
+WITH category_analysis AS 
+(
+    SELECT
+        CASE 
+            WHEN TRIM(LOWER(category)) = 'electronics' THEN 'Electronics'
+            WHEN TRIM(LOWER(category)) = 'clothing'    THEN 'Clothing'
+            WHEN TRIM(LOWER(category)) = 'kitchen'     THEN 'Kitchen'
+            WHEN TRIM(LOWER(category)) = 'office'      THEN 'Office'
+            WHEN TRIM(LOWER(category)) = 'sports'      THEN 'Sports'
+            WHEN TRIM(LOWER(category)) = 'health'      THEN 'Health'
+            WHEN TRIM(LOWER(category)) = 'beauty'      THEN 'Beauty'
+            WHEN TRIM(LOWER(category)) = 'footwear'    THEN 'Footwear'
+            WHEN TRIM(LOWER(category)) = 'toys'        THEN 'Toys'
+            WHEN TRIM(LOWER(category)) = 'bags'        THEN 'Bags'
+            ELSE 'Unknown'
+        END AS category
+    FROM bronze.inventory_snapshots
+)
+SELECT 
+    category COLLATE Latin1_General_CS_AS as category ,
+    COUNT(*) as total_count
+FROM category_analysis
+GROUP BY category COLLATE Latin1_General_CS_AS
+ORDER BY total_count DESC ;
+
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
@@ -281,7 +315,20 @@ SELECT TOP (1000)
         ELSE TRIM(sku)
     END as sku
 
-      ,[category]
+    ,CASE 
+        WHEN TRIM(LOWER(category)) = 'electronics' THEN 'Electronics'
+        WHEN TRIM(LOWER(category)) = 'clothing'    THEN 'Clothing'
+        WHEN TRIM(LOWER(category)) = 'kitchen'     THEN 'Kitchen'
+        WHEN TRIM(LOWER(category)) = 'office'      THEN 'Office'
+        WHEN TRIM(LOWER(category)) = 'sports'      THEN 'Sports'
+        WHEN TRIM(LOWER(category)) = 'health'      THEN 'Health'
+        WHEN TRIM(LOWER(category)) = 'beauty'      THEN 'Beauty'
+        WHEN TRIM(LOWER(category)) = 'footwear'    THEN 'Footwear'
+        WHEN TRIM(LOWER(category)) = 'toys'        THEN 'Toys'
+        WHEN TRIM(LOWER(category)) = 'bags'        THEN 'Bags'
+        ELSE 'Unknown'
+    END AS category
+    
       ,[stock_on_hand]
       ,[stock_reserved]
       ,[stock_available]
