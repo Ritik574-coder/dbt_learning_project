@@ -140,7 +140,113 @@ WHERE snapshot_date IS NULL ;
 --=============================================================================================
 --================================= product_id column cleaning ================================
 --=============================================================================================
+-- product_id data profiling
+SELECT 
+    product_id
+FROM bronze.inventory_snapshots 
+WHERE product_id IS NULL 
+OR product_id = ''
+OR TRY_CONVERT(INT, product_id) IS NULL ;
 
+-- product_id distribution analysis 
+SELECT 
+    product_id,
+    COUNT(*) product_id_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentages
+FROM bronze.inventory_snapshots 
+    GROUP BY product_id 
+    ORDER BY product_id_count ;
+
+-- Final product_id cleaning validation 
+SELECT 
+    CASE 
+        WHEN TRY_CONVERT(INT, product_id) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, product_id)
+    END  as product_id
+FROM bronze.inventory_snapshots  ;
+
+--=============================================================================================
+--================================= product_name column cleaning ==============================
+--=============================================================================================
+-- producnt_name data profiling 
+SELECT 
+      product_name 
+FROM  bronze.inventory_snapshots 
+WHERE product_name IS NULL 
+   OR product_name = ''
+   OR product_name != TRIM(product_name)
+   OR LEN(product_name) < 4 ;
+
+-- product_name distribution analysis 
+SELECT 
+    product_name,
+    COUNT(*) product_name_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentages
+FROM bronze.inventory_snapshots 
+    GROUP BY product_name 
+    ORDER BY product_name_count ;
+
+-- Final Product_name cleaning validation
+SELECT 
+    CASE 
+        WHEN product_name IS NULL OR product_name = '' THEN 'Unknown'
+        ELSE TRIM(product_name)
+    END as product_name
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--==================================== sku column cleaning ====================================
+--=============================================================================================
+-- sku data profiling 
+SELECT 
+      sku
+FROM  bronze.inventory_snapshots 
+WHERE sku IS NULL 
+   OR sku = ''
+   OR sku != TRIM(product_name)
+   OR LEN(sku) < 4 ;
+
+-- product_name distribution analysis 
+SELECT 
+    sku,
+    COUNT(*) sku_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentages
+FROM bronze.inventory_snapshots 
+    GROUP BY sku 
+    ORDER BY sku_count ;
+
+-- Final sku cleaning validation
+SELECT 
+    CASE 
+        WHEN sku IS NULL OR sku = '' THEN 'Unknown'
+        ELSE TRIM(sku)
+    END as sku
+FROM bronze.inventory_snapshots ;
+
+--=============================================================================================
+--=============================== category column cleaning ====================================
+--=============================================================================================
+-- category data profiling 
+SELECT 
+    category 
+FROM bronze.inventory_snapshots 
+WHERE category IS NULL 
+OR category = ''
+OR category != TRIM(category) ;
+
+SELECT DISTINCT 
+    category 
+FROM bronze.inventory_snapshots
+
+-- category distribution analysis 
+SELECT 
+    category,
+    COUNT(*) category_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentages
+FROM bronze.inventory_snapshots 
+    GROUP BY category
+    HAVING COUNT(*) > 1
+    ORDER BY category_count DESC;
 
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
@@ -160,11 +266,21 @@ SELECT TOP (1000)
         ELSE TRY_CONVERT(DATE, snapshot_date)
     END as snapshot_date
 
-      ,[product_id]
+    ,CASE 
+        WHEN TRY_CONVERT(INT, product_id) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, product_id)
+    END  as product_id
 
-      ,[product_name]
+    ,CASE 
+        WHEN product_name IS NULL OR product_name = '' THEN 'Unknown'
+        ELSE TRIM(product_name)
+    END as product_name
 
-      ,[sku]
+    ,CASE 
+        WHEN sku IS NULL OR sku = '' THEN 'Unknown'
+        ELSE TRIM(sku)
+    END as sku
+
       ,[category]
       ,[stock_on_hand]
       ,[stock_reserved]
