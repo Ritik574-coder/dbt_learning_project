@@ -988,15 +988,6 @@ SELECT
 FROM bronze.customers
 WHERE email NOT LIKE '%.__%' 
 
-
-SELECT 
-REPLACE(
-    LOWER(TRIM(email)),
-    '@+',
-    '@'
-)
-FROM bronze.customers
-
 -- at symbol repetition check in email column
 SELECT
     email,
@@ -1044,21 +1035,11 @@ SELECT
             CONCAT(
                 LEFT(TRIM(LOWER(email)),CHARINDEX('@', TRIM(LOWER(email))) - 1), '@',
                 CASE
-                    WHEN RIGHT(
-                            TRIM(LOWER(email)),
-                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'yahoocom' THEN 'yahoo.com'
-                    WHEN RIGHT(
-                            TRIM(LOWER(email)),
-                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'iclod.com' THEN 'icloud.com'
-                    WHEN RIGHT(
-                            TRIM(LOWER(email)),
-                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'outook.com' THEN 'outlook.com'
-                    WHEN RIGHT(
-                            TRIM(LOWER(email)),
-                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'ahoo.com' THEN 'yahoo.com'
-                    ELSE RIGHT(
-                            TRIM(LOWER(email)),
-                            LEN(TRIM(email)) - CHARINDEX('@', TRIM(email)))
+                    WHEN RIGHT(TRIM(LOWER(email)), LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'yahoocom' THEN 'yahoo.com'
+                    WHEN RIGHT(TRIM(LOWER(email)), LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'iclod.com' THEN 'icloud.com'
+                    WHEN RIGHT(TRIM(LOWER(email)), LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'outook.com' THEN 'outlook.com'
+                    WHEN RIGHT(TRIM(LOWER(email)), LEN(TRIM(email)) - CHARINDEX('@', TRIM(email))) = 'ahoo.com' THEN 'yahoo.com'
+                    ELSE RIGHT(TRIM(LOWER(email)), LEN(TRIM(email)) - CHARINDEX('@', TRIM(email)))
                 END
             )
     END AS email

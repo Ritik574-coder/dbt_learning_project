@@ -774,14 +774,26 @@ SELECT
     email 
 FROM bronze.employees 
 WHERE email LIKE '%@' ;
-
--- check email where dot '.' are messing 
+ 
+-- check email where dot are messing 
 SELECT 
-    email 
+    email
+FROM bronze.employees
+WHERE email NOT LIKE '%.__%' ;
+
+--checking those email they contain empty space 
+SELECT 
+email
 FROM bronze.employees 
-WHERE email NOT LIKE '%.%' ;
+WHERE email LIKE '% %' ;
+
+-- checking user name 
+SELECT 
+    LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) -1)
+FROM bronze.employees ;
 
 -- checking employee email domain
+
 WITH email_check AS 
 (
     SELECT 
@@ -795,6 +807,51 @@ SELECT
 FROM email_check
     GROUP BY domain
     ORDER BY domain_count DESC;
+
+-- employee domain check 
+WITH email_domain AS 
+(
+    SELECT 
+        CASE 
+            WHEN email IS NULL OR TRIM(email) = '' THEN 'Unknown'
+            WHEN email NOT LIKE '%@%' THEN 'Unknown'
+            WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN 
+            LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) -1)
+            + '@' + REPLACE(SUBSTRING(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) +1,
+            LEN(TRIM(LOWER(email)))), '@' ,'')
+            ELSE TRIM(LOWER(email))
+        END as email
+    FROM bronze.employees
+),
+domain_analysis AS 
+(
+    SELECT
+        SUBSTRING(email, CHARINDEX('@', email) + 1 , LEN(email)) as domain 
+    FROM email_domain
+)
+SELECT 
+    domain ,
+    COUNT(*) as domain_count,
+    CAST(ROUND(COUNT(*)*100/SUM(COUNT(*)) OVER(), 2) as nvarchar) + '%' as percentage 
+FROM domain_analysis
+    GROUP BY domain
+    ORDER BY domain_count DESC;
+
+-- Final email Cleaning and Standardization Query
+SELECT
+    CASE 
+        WHEN email IS NULL OR TRIM(email) = '' THEN 'Unknown'
+        WHEN email NOT LIKE '%@%' THEN 'Unknown'
+        WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN 
+        LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) -1)
+        + '@' + REPLACE(SUBSTRING(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) +1,
+        LEN(TRIM(LOWER(email)))), '@' ,'')
+        ELSE TRIM(LOWER(email))
+    END as email
+FROM bronze.employees
+WHERE PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 
+
+
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
@@ -808,7 +865,15 @@ SELECT TOP (1000)
 
         PARSENAME(REPLACE(TRIM(full_name),' ','.'),1) as last_name
 
-      ,[email]
+    ,CASE 
+        WHEN email IS NULL OR TRIM(email) = '' THEN 'Unknown'
+        WHEN email NOT LIKE '%@%' THEN 'Unknown'
+        WHEN PATINDEX('%@%@%', TRIM(LOWER(email))) > 0 THEN 
+        LEFT(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) -1)
+        + '@' + REPLACE(SUBSTRING(TRIM(LOWER(email)), CHARINDEX('@', TRIM(LOWER(email))) +1,
+        LEN(TRIM(LOWER(email)))), '@' ,'')
+        ELSE TRIM(LOWER(email))
+    END as email
 
     ,CASE 
         WHEN phone LIKE '+___________'   THEN  CONCAT('+1 (', SUBSTRING(phone, 3, 3), ') ',  SUBSTRING(phone, 6, 3), '-', SUBSTRING(phone, 9,4))
