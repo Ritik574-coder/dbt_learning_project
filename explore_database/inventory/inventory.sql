@@ -231,8 +231,8 @@ SELECT
     category 
 FROM bronze.inventory_snapshots 
 WHERE category IS NULL 
-OR category = ''
-OR category != TRIM(category) ;
+    OR category = ''
+    OR category != TRIM(category) ;
 
 SELECT DISTINCT 
     category 
@@ -253,8 +253,8 @@ SELECT
     category COLLATE Latin1_General_CS_AS as category ,
     COUNT(*) as total_count
 FROM bronze.inventory_snapshots
-GROUP BY category COLLATE Latin1_General_CS_AS
-ORDER BY total_count DESC ;
+    GROUP BY category COLLATE Latin1_General_CS_AS
+    ORDER BY total_count DESC ;
 
 -- category cleaning and standardization 
 WITH category_analysis AS 
@@ -279,8 +279,57 @@ SELECT
     category COLLATE Latin1_General_CS_AS as category ,
     COUNT(*) as total_count
 FROM category_analysis
-GROUP BY category COLLATE Latin1_General_CS_AS
-ORDER BY total_count DESC ;
+    GROUP BY category COLLATE Latin1_General_CS_AS
+    ORDER BY total_count DESC ;
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+stock_on_hand 
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+stock_reserved 
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+stock_available
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+reorder_level
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+unit_cost
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+unit_price 
+FROM bronze.inventory_snapshots 
+
+--=============================================================================================
+--=============================== stock_on_hand column cleaning ===============================
+--=============================================================================================
+SELECT 
+inventory_value 
+FROM bronze.inventory_snapshots
 
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
@@ -330,12 +379,21 @@ SELECT TOP (1000)
     END AS category
     
       ,[stock_on_hand]
+
       ,[stock_reserved]
+
       ,[stock_available]
+
       ,[reorder_level]
+
       ,[unit_cost]
+
       ,[unit_price]
+
       ,[inventory_value]
+
       ,[warehouse_location]
+
       ,[store_id]
+
   FROM [bronze].[inventory_snapshots]  
