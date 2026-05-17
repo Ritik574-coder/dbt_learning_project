@@ -306,6 +306,7 @@ SELECT
     END AS stock_on_hand
 FROM bronze.inventory_snapshots
 WHERE stock_on_hand IS NULL ;
+
 --=============================================================================================
 --=============================== stock_reserved column cleaning ==============================
 --=============================================================================================
@@ -332,35 +333,82 @@ SELECT
 WHERE stock_reserved IS NULL ;
 
 --=============================================================================================
---=============================== stock_on_hand column cleaning ===============================
+--============================= stock_available column cleaning ===============================
 --=============================================================================================
+-- stock_available data overview 
 SELECT 
 stock_available
 FROM bronze.inventory_snapshots 
 
---=============================================================================================
---=============================== stock_on_hand column cleaning ===============================
---=============================================================================================
+-- stock_available data profilint 
 SELECT 
-reorder_level
-FROM bronze.inventory_snapshots 
+      stock_available 
+FROM  bronze.inventory_snapshots 
+WHERE stock_available IS NULL
+   OR stock_available < 0
+   OR TRY_CONVERT(INT, stock_available) IS NULL ;
+
+-- null count in stock_available
+SELECT 
+      COUNT(*) as null_count
+FROM  bronze.inventory_snapshots
+WHERE stock_available IS NULL ;
+
+-- not null count in stock_available
+SELECT 
+      stock_available
+FROM  bronze.inventory_snapshots 
+WHERE stock_available IS NOT NULL ;
+
+-- stock_available cleaning and standardization
+SELECT 
+    CASE 
+        WHEN stock_available IS NULL THEN stock_on_hand - stock_reserved 
+        WHEN TRY_CONVERT(INT, stock_available) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, stock_available)
+    END as stock_available
+FROM bronze.inventory_snapshots ;
 
 --=============================================================================================
---=============================== stock_on_hand column cleaning ===============================
+--=============================== reorder_level column cleaning ===============================
+--=============================================================================================
+-- reorder_level data overview 
+SELECT 
+    reorder_level
+FROM bronze.inventory_snapshots ;
+
+--reorder_level data profiling 
+SELECT 
+      reorder_level
+FROM  bronze.inventory_snapshots 
+WHERE reorder_level IS NULL 
+   OR reorder_level < 0 
+   OR TRY_CONVERT(INT, reorder_level) IS NULL ;
+
+-- reorder_level cleaning and standardization
+SELECT 
+    CASE 
+        WHEN reorder_level IS NULL OR reorder_level < 0 OR TRY_CONVERT(INT, reorder_level) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, reorder_level)
+    END as reorder_level
+FROM bronze.inventory_snapshots ;
+
+--=============================================================================================
+--=============================== unit_cost column cleaning ===================================
 --=============================================================================================
 SELECT 
 unit_cost
 FROM bronze.inventory_snapshots 
 
 --=============================================================================================
---=============================== stock_on_hand column cleaning ===============================
+--================================== unit_price column cleaning ===============================
 --=============================================================================================
 SELECT 
 unit_price 
 FROM bronze.inventory_snapshots 
 
 --=============================================================================================
---=============================== stock_on_hand column cleaning ===============================
+--=============================== inventory_value  column cleaning ============================
 --=============================================================================================
 SELECT 
 inventory_value 
@@ -418,11 +466,21 @@ SELECT TOP (1000)
         ELSE TRY_CONVERT(INT, stock_on_hand)
     END AS stock_on_hand
 
-      ,[stock_reserved]
+    ,CASE 
+        WHEN stock_reserved < 0 OR TRY_CONVERT(INT, stock_reserved) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, stock_reserved)
+    END  as stock_reserved
 
-      ,[stock_available]
+    ,CASE 
+        WHEN stock_available IS NULL THEN stock_on_hand - stock_reserved 
+        WHEN TRY_CONVERT(INT, stock_available) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, stock_available)
+    END as stock_available
 
-      ,[reorder_level]
+    ,CASE 
+        WHEN reorder_level IS NULL OR reorder_level < 0 OR TRY_CONVERT(INT, reorder_level) IS NULL THEN NULL 
+        ELSE TRY_CONVERT(INT, reorder_level)
+    END as reorder_level
 
       ,[unit_cost]
 
