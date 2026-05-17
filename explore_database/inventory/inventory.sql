@@ -534,6 +534,64 @@ SELECT
 stock_on_hand * unit_price as inventory_value
 FROM calc_inventory_value ;
 
+--=============================================================================================
+--=============================== warehouse_location  column cleaning =========================
+--=============================================================================================
+-- warehouse_location data overview
+SELECT 
+    warehouse_location
+FROM bronze.inventory_snapshots ;
+
+-- warehouse_location unique data overview
+SELECT DISTINCT 
+    warehouse_location
+FROM bronze.inventory_snapshots ;
+
+-- warehouse_location case-sensitive data profiling
+SELECT DISTINCT 
+    UPPER(warehouse_location) COLLATE Latin1_General_CS_AS as warehouse_location
+FROM bronze.inventory_snapshots ;
+
+-- warehouse_location data profiling and standardization
+SELECT 
+    CASE 
+        WHEN warehouse_location IS NULL OR warehouse_location = '' THEN 'Unknown'
+        ELSE UPPER(warehouse_location)
+    END as warehouse_location
+FROM bronze.inventory_snapshots ;
+
+--=============================================================================================
+--================================= store_id  column cleaning =================================
+--=============================================================================================
+-- store_id data overview
+SELECT 
+    store_id
+FROM bronze.inventory_snapshots ;
+
+-- store_id data profiling
+SELECT 
+    store_id
+FROM bronze.inventory_snapshots 
+WHERE store_id IS NULL OR store_id = ''
+    OR TRY_CONVERT(INT, store_id) IS NULL ;
+
+-- store id distribution analysis
+SELECT 
+    store_id,
+    COUNT(*) store_id_count,
+    CAST(ROUND(COUNT(*)*100.0/SUM(COUNT(*)) OVER(), 2) AS NVARCHAR) + '%' as percentages
+FROM bronze.inventory_snapshots 
+    GROUP BY store_id
+    ORDER BY store_id_count DESC ;
+
+-- store_id cleaning and standardization
+SELECT 
+    CASE 
+        WHEN store_id IS NULL OR store_id = '' THEN NULL
+        ELSE TRY_CONVERT(INT, store_id)
+    END as store_id
+FROM bronze.inventory_snapshots ;
+
 --#############################################################################################
 --############################## EMPLOYEE CLEAN DATA ##########################################
 --#############################################################################################
@@ -614,7 +672,7 @@ FROM
         END as reorder_level
 
         ,CASE 
-            WHEN unit_cost LIKE '$%' THEN SUBSTRING(unit_cost, 2, LEN(unit_cost))
+            WHEN unit_cost LIKE '$%' THEN TRY_CONVERT(DECIMAL(10, 2), SUBSTRING(unit_cost, 2, LEN(unit_cost)))
             ELSE TRY_CONVERT(DECIMAL(10, 2), unit_cost)
         END as unit_cost
 
@@ -623,7 +681,10 @@ FROM
             ELSE TRY_CONVERT(DECIMAL(10, 2), unit_price)
         END as unit_price
 
-        ,[warehouse_location]
+        ,CASE 
+            WHEN warehouse_location IS NULL OR warehouse_location = '' THEN 'Unknown'
+            ELSE UPPER(warehouse_location)
+        END as warehouse_location
 
         ,[store_id]
 
