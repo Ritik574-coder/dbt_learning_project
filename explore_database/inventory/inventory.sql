@@ -686,7 +686,10 @@ FROM
             ELSE UPPER(warehouse_location)
         END as warehouse_location
 
-        ,[store_id]
+        ,CASE 
+            WHEN store_id IS NULL OR store_id = '' THEN NULL
+            ELSE TRY_CONVERT(INT, store_id)
+        END as store_id
 
     FROM [bronze].[inventory_snapshots]  
 )t;
