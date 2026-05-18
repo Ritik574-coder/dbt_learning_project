@@ -164,3 +164,7 @@ To reach full maturity, the project should move towards **Dimensional Modeling (
 
 ---
 *Created by Ritik CLI Ai agent for the dbt SQL Server Learning Project.*
+
+```
+Co-authored-by: ritsky-project <ritsky598@gmail.com>
+```
