@@ -1,4 +1,5 @@
-SELECT TOP (1000) [review_id]
+SELECT TOP (1000) 
+       [review_id]
       ,[txn_id]
       ,[customer_id]
       ,[customer_name]
