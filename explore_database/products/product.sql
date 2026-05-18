@@ -290,6 +290,38 @@ SELECT
         ELSE dbo.TitleCase(TRIM(department))
     END AS department
 FROM bronze.products ;
+
+--=============================================================================================
+--================================ base_price_usd  column cleaning ============================
+--=============================================================================================
+-- data profiling for base_price_usd
+SELECT 
+    base_price_usd 
+FROM bronze.products 
+WHERE base_price_usd IS NULL 
+   OR TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', '')) IS NULL ;
+
+-- base_price_usd cleaning and standardization
+WITH CleanBasePrice AS 
+(
+    SELECT 
+        CASE 
+            WHEN base_price_usd IS NULL OR TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', '')) IS NULL THEN NULL
+            WHEN TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', '')) < 0 THEN NULL 
+            ELSE TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', ''))
+        END AS base_price_usd
+    FROM bronze.products 
+)
+SELECT 
+    *
+FROM CleanBasePrice
+WHERE base_price_usd IS NULL ;
+
+--=============================================================================================
+--================================ base_price_usd  column cleaning ============================
+--=============================================================================================
+
+
 --#############################################################################################
 --############################## PRODUCTS CLEAN DATA ##########################################
 --#############################################################################################
@@ -330,7 +362,11 @@ SELECT TOP (1000)
         ELSE dbo.TitleCase(TRIM(department))
     END AS department
 
-      ,[base_price_usd]
+    ,CASE 
+        WHEN base_price_usd IS NULL OR TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', '')) IS NULL THEN NULL
+        WHEN TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', '')) < 0 THEN NULL 
+        ELSE TRY_CONVERT(DECIMAL(10,2), REPLACE(REPLACE(base_price_usd, ',', ''),'$', ''))
+    END AS base_price_usd
 
       ,[cost_price_usd]
 
